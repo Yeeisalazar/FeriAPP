@@ -1,0 +1,1394 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#6B4E2E">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="FeriAPP">
+<meta name="description" content="Tu cuaderno inteligente para ferias y emprendimientos">
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<title>FeriAPP — Tu Cuaderno Inteligente</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow:hidden;background:#D4C4B0;}
+body{font-family:'Nunito',sans-serif;display:flex;justify-content:center;align-items:flex-start;}
+#app{width:100%;max-width:430px;height:100vh;height:100dvh;background:#FAF7F3;position:relative;overflow:hidden;display:flex;flex-direction:column;}
+.screen{display:none;flex-direction:column;flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding-bottom:80px;}
+.screen.active{display:flex;}
+
+/* NAV */
+.nav{position:absolute;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #EDE6DC;display:flex;padding:8px 0 max(12px,env(safe-area-inset-bottom));z-index:100;}
+.nb{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;cursor:pointer;padding:3px 0;font-family:'Nunito',sans-serif;}
+.ni{font-size:22px;line-height:1;}
+.nl{font-size:9px;font-weight:700;color:#C5B8A8;text-transform:uppercase;letter-spacing:.5px;}
+.nb.on .nl{color:#6B4E2E;}
+.ndot{width:4px;height:4px;border-radius:50%;background:#E8A838;margin:0 auto;}
+
+/* HEADER */
+.hdr{background:linear-gradient(150deg,#6B4E2E 0%,#9B7552 100%);padding:max(28px,env(safe-area-inset-top)) 22px 36px;position:relative;overflow:hidden;flex-shrink:0;}
+.hdr::before{content:'';position:absolute;top:-30px;right:-30px;width:130px;height:130px;border-radius:50%;background:rgba(255,255,255,.07);}
+.hdr::after{content:'';position:absolute;bottom:-40px;right:50px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.04);}
+.hdr-date{color:rgba(255,255,255,.65);font-size:12px;margin-bottom:3px;position:relative;}
+.hdr-emp{color:rgba(255,255,255,.5);font-size:11px;font-weight:600;margin-bottom:2px;position:relative;text-transform:uppercase;letter-spacing:.8px;}
+.hdr-title{color:#FAF7F3;font-family:'Lora',serif;font-size:26px;font-weight:700;margin-bottom:22px;position:relative;}
+.stat-row{display:grid;grid-template-columns:1fr 1fr;gap:11px;position:relative;}
+.stat-box{background:rgba(255,255,255,.13);border-radius:15px;padding:13px 15px;}
+.stat-lbl{color:rgba(255,255,255,.6);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;}
+.stat-val{color:#fff;font-size:22px;font-weight:800;margin-top:4px;}
+
+/* CARDS */
+.card{background:#fff;border-radius:18px;padding:16px 18px;border:1px solid #EDE6DC;margin:0 16px 12px;}
+.clbl{font-size:10px;color:#A89882;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:9px;}
+
+/* BUTTONS */
+.btn-main{background:linear-gradient(135deg,#E8A838,#D4882A);color:#fff;border:none;border-radius:18px;padding:17px 22px;font-size:15px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:space-between;font-family:'Nunito',sans-serif;width:100%;transition:transform .12s,opacity .12s;}
+.btn-main:active{transform:scale(.97);opacity:.9;}
+.btn-sec{background:#FAF7F3;color:#6B4E2E;border:2px solid #6B4E2E;border-radius:14px;padding:13px 18px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif;width:100%;transition:background .15s;}
+.btn-sec:active{background:#EFE4D4;}
+.btn-pro{background:linear-gradient(135deg,#6B4E2E,#9B7552);color:#fff;border:none;border-radius:14px;padding:14px 18px;font-size:15px;font-weight:800;cursor:pointer;font-family:'Nunito',sans-serif;width:100%;transition:transform .12s;}
+.btn-pro:active{transform:scale(.97);}
+.btn-ghost{background:none;border:none;cursor:pointer;font-family:'Nunito',sans-serif;padding:0;}
+
+/* CHIPS */
+.chips{display:flex;flex-wrap:wrap;gap:8px;}
+.chip{padding:8px 14px;border-radius:20px;border:1.5px solid #EDE6DC;background:#FAF7F3;color:#6B4E2E;font-size:12px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif;transition:all .15s;}
+.chip.on{background:#6B4E2E;color:#FAF7F3;border-color:#6B4E2E;}
+.chip:active{transform:scale(.95);}
+
+/* PROD GRID */
+.prod-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px;padding:0 16px;}
+.prod-card{background:#fff;border-radius:17px;padding:14px 13px;border:2px solid #EDE6DC;transition:border-color .15s,box-shadow .15s;}
+.prod-card.has{border-color:#6B4E2E;box-shadow:0 4px 14px rgba(107,78,46,.14);}
+.prod-top{display:flex;align-items:center;gap:9px;margin-bottom:12px;}
+.prod-ico{width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:21px;flex-shrink:0;}
+.prod-nm{font-weight:700;font-size:13px;color:#3D2D1A;line-height:1.2;}
+.prod-pr{font-size:11px;color:#A89882;margin-top:1px;}
+.ctr{display:flex;align-items:center;justify-content:space-between;}
+.cb{width:38px;height:38px;border-radius:10px;border:none;font-size:20px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:'Nunito',sans-serif;transition:transform .1s;}
+.cb:active{transform:scale(.88);}
+.cminus{background:#F5EDE4;color:#6B4E2E;border:1.5px solid #EDE6DC;}
+.cplus{background:#6B4E2E;color:#fff;}
+.cnum{font-size:22px;font-weight:800;color:#3D2D1A;min-width:32px;text-align:center;}
+
+/* TOTAL BAR */
+.tot-bar{background:#6B4E2E;border-radius:18px;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;margin:0 16px 12px;}
+.savebtn{background:#E8A838;color:#fff;border:none;border-radius:12px;padding:12px 18px;font-weight:800;font-size:14px;cursor:pointer;font-family:'Nunito',sans-serif;transition:transform .12s;}
+.savebtn:active{transform:scale(.95);}
+
+/* CUADERNO */
+.dia-card{background:#fff;border-radius:18px;overflow:hidden;border:1px solid #EDE6DC;margin:0 16px 14px;}
+.dia-hdr{background:#FAF7F3;padding:12px 18px;border-bottom:1px solid #EDE6DC;display:flex;justify-content:space-between;align-items:center;}
+.dia-fecha{font-family:'Lora',serif;font-weight:700;color:#3D2D1A;font-size:14px;text-transform:capitalize;}
+.dia-total{font-weight:800;color:#6B4E2E;font-size:15px;}
+.dia-items{padding:13px 18px;}
+.dia-item{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px dashed #EDE6DC;}
+.dia-item:last-child{border-bottom:none;}
+.dia-left{display:flex;align-items:center;gap:9px;}
+.dia-nm{font-size:13px;color:#3D2D1A;font-weight:600;}
+.dia-cant{font-size:12px;color:#A89882;}
+.dia-monto{font-weight:700;color:#6B4E2E;font-size:13px;}
+.canal-tag{display:inline-block;font-size:10px;color:#A89882;background:#F5EDE4;padding:3px 10px;border-radius:8px;margin:6px 18px 14px;}
+
+/* SOBRANTES */
+.sob-card{background:#fff;border-radius:16px;padding:16px 18px;border:1px solid #EDE6DC;margin:0 16px 10px;}
+.sob-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;}
+.sob-inp{width:100%;padding:10px 12px;border-radius:10px;border:1.5px solid #EDE6DC;font-size:16px;font-weight:700;text-align:center;color:#3D2D1A;background:#FAF7F3;font-family:'Nunito',sans-serif;outline:none;}
+.sob-inp:focus{border-color:#6B4E2E;}
+.sob-inp.sobro{border-color:#F5DEB3;background:#FFF9F0;color:#B8860B;}
+
+/* PLAN */
+.plan-box{border-radius:20px;padding:20px 22px;margin:0 16px 14px;}
+.plan-free{background:#fff;border:1.5px solid #EDE6DC;}
+.plan-plus{background:linear-gradient(160deg,#FFF9ED,#FFFBF5);border:2px solid #E8A838;}
+.plan-nm{font-weight:800;font-size:17px;color:#3D2D1A;margin-bottom:3px;}
+.plan-price{font-size:24px;font-weight:800;color:#6B4E2E;}
+.plan-feat{font-size:12px;color:#6B4E2E;padding:5px 0;border-bottom:1px dashed #EDE6DC;line-height:1.4;}
+.plan-feat:last-child{border-bottom:none;}
+.plan-feat::before{content:"✓  ";}
+.badge-pop{display:inline-block;background:#E8A838;color:#fff;font-size:10px;font-weight:800;padding:3px 11px;border-radius:20px;margin-bottom:9px;}
+
+/* PROD LIST */
+.pli{display:flex;align-items:center;gap:12px;background:#fff;border-radius:14px;padding:13px 16px;border:1px solid #EDE6DC;margin:0 16px 10px;}
+.pli-nm{font-weight:700;color:#3D2D1A;font-size:14px;}
+.pli-sub{font-size:12px;color:#A89882;margin-top:2px;}
+.badge{font-size:10px;padding:2px 8px;border-radius:8px;font-weight:700;margin-right:4px;display:inline-block;}
+.bg{background:#E8F5E9;color:#2E7D32;}
+.bw{background:#FFF9F0;color:#B8860B;}
+.bi{background:#E3F2FD;color:#1565C0;}
+
+/* REC FERIA */
+.rec{background:#fff;border-radius:14px;padding:14px 16px;border:1px solid #EDE6DC;margin:0 16px 10px;}
+.rec.ia{background:#FFFBF0;border-color:#F5DEB3;}
+.rec-txt{font-size:13px;color:#3D2D1A;line-height:1.55;}
+
+/* ── FERIAI SCREEN ──────────────────────────────────── */
+.fai-header{background:linear-gradient(135deg,#1B3A4B,#2D6A4F);padding:max(28px,env(safe-area-inset-top)) 22px 28px;position:relative;overflow:hidden;flex-shrink:0;}
+.fai-header::before{content:'';position:absolute;top:-20px;right:-20px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.06);}
+.fai-tag{font-size:10px;font-weight:800;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;}
+.fai-title{font-family:'Lora',serif;font-size:22px;font-weight:700;color:#fff;line-height:1.25;margin-bottom:8px;}
+.fai-desc{font-size:12px;color:rgba(255,255,255,.65);line-height:1.55;}
+.fai-body{display:flex;flex-direction:column;gap:0;flex:1;}
+.fai-section{padding:18px 16px 0;}
+.fai-section-title{font-family:'Lora',serif;font-size:16px;font-weight:700;color:#3D2D1A;margin-bottom:12px;}
+
+/* Consejo card */
+.consejo{background:#fff;border-radius:14px;padding:14px 16px;border:1px solid #EDE6DC;margin-bottom:10px;cursor:default;}
+.consejo-titulo{font-weight:700;font-size:14px;color:#3D2D1A;margin-bottom:5px;line-height:1.3;}
+.consejo-desc{font-size:13px;color:#8A7A6A;line-height:1.5;}
+.consejo.verde{border-left:4px solid #2D9748;}
+.consejo.amber{border-left:4px solid #E8A838;}
+.consejo.rojo{border-left:4px solid #D94F3D;}
+.consejo.azul{border-left:4px solid #2D6A8B;}
+
+/* Preguntas rápidas */
+.pregunta-btn{background:#fff;border:1px solid #EDE6DC;border-radius:12px;padding:13px 16px;text-align:left;font-size:14px;font-weight:600;color:#3D2D1A;cursor:pointer;font-family:'Nunito',sans-serif;width:100%;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;transition:all .15s;}
+.pregunta-btn:active{background:#F5EDE4;transform:scale(.98);}
+.pregunta-btn .arrow{color:#A89882;font-size:16px;}
+.respuesta-box{background:#F5F9F6;border-radius:12px;padding:14px 16px;border-left:3px solid #2D9748;margin-bottom:8px;font-size:13px;color:#3D2D1A;line-height:1.6;display:none;}
+.respuesta-box.visible{display:block;}
+.resp-loading{color:#A89882;font-style:italic;}
+
+/* INPUTS */
+input.fi{width:100%;padding:12px 14px;border-radius:12px;border:1.5px solid #EDE6DC;font-size:15px;font-family:'Nunito',sans-serif;background:#FAF7F3;color:#3D2D1A;outline:none;transition:border-color .15s;-webkit-appearance:none;}
+input.fi:focus{border-color:#6B4E2E;}
+input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;}
+
+/* TOAST */
+#toast{position:absolute;bottom:96px;left:50%;transform:translateX(-50%) translateY(10px);background:#3D2D1A;color:#FAF7F3;padding:11px 22px;border-radius:22px;font-weight:700;font-size:13px;opacity:0;transition:all .28s;white-space:nowrap;pointer-events:none;z-index:999;max-width:88%;text-align:center;}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* UTIL */
+.sec-title{font-family:'Lora',serif;font-size:21px;color:#3D2D1A;padding:22px 20px 4px;font-weight:700;}
+.sec-sub{font-size:12px;color:#A89882;padding:0 20px 16px;line-height:1.5;}
+.lbl-s{font-size:10px;color:#A89882;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;display:block;}
+.spacer{height:16px;}
+.empty{text-align:center;padding:48px 24px;color:#C5B8A8;font-size:14px;line-height:1.7;}
+.empty-ico{font-size:44px;margin-bottom:12px;}
+.tab-row{display:flex;gap:0;background:#F5EDE4;border-radius:14px;padding:4px;margin:0 16px 16px;}
+.tab-btn{flex:1;padding:9px;border-radius:10px;border:none;background:none;font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;color:#9B7552;cursor:pointer;transition:all .15s;}
+.tab-btn.on{background:#fff;color:#6B4E2E;box-shadow:0 1px 4px rgba(107,78,46,.12);}
+.onb{padding:max(40px,env(safe-area-inset-top)) 24px 100px;}
+.onb h1{font-family:'Lora',serif;font-size:28px;color:#3D2D1A;margin-bottom:10px;line-height:1.25;}
+.onb p{color:#A89882;font-size:14px;line-height:1.65;margin-bottom:28px;}
+.onb-step{font-size:11px;color:#E8A838;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;}
+
+/* PERFIL modal */
+.modal-bg{position:absolute;inset:0;background:rgba(0,0,0,.45);z-index:200;display:flex;align-items:flex-end;justify-content:center;}
+.modal-box{background:#FAF7F3;border-radius:24px 24px 0 0;padding:28px 24px max(28px,env(safe-area-inset-bottom));width:100%;max-height:85vh;overflow-y:auto;}
+.modal-handle{width:40px;height:4px;background:#EDE6DC;border-radius:2px;margin:0 auto 20px;}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- ══ ONBOARDING ══════════════════════════════════════════ -->
+<div class="screen active" id="s-onb">
+<div class="onb">
+  <div class="onb-step">FeriAPP · Beta piloto</div>
+  <h1>Anota como siempre.<br/>Decide mejor.</h1>
+  <p>Para feriantes, reposteras y artesanas que quieren saber qué vender, cuánto llevar y cuándo ajustar precios — sin Excel.</p>
+
+  <!-- Nombre emprendimiento -->
+  <div style="background:#fff;border-radius:18px;padding:18px;border:1px solid #EDE6DC;margin-bottom:16px;">
+    <div style="font-size:13px;color:#6B4E2E;font-weight:700;margin-bottom:10px;">¿Cómo se llama tu emprendimiento?</div>
+    <input class="fi" id="onb-nombre-emp" placeholder="Ej: Dulces de Carmen, La Artesana..." maxlength="40">
+    <div style="font-size:11px;color:#C5B8A8;margin-top:6px;">Aparecerá en tu cuaderno para hacerlo tuyo 🎀</div>
+  </div>
+
+  <div style="background:#fff;border-radius:18px;padding:18px;border:1px solid #EDE6DC;margin-bottom:16px;">
+    <div style="font-size:13px;color:#6B4E2E;font-weight:700;margin-bottom:12px;">¿Qué vendes principalmente?</div>
+    <div class="chips" id="tipo-chips">
+      <div class="chip on" onclick="sc(this,'tipo')">🍰 Repostería</div>
+      <div class="chip" onclick="sc(this,'tipo')">🧶 Artesanía</div>
+      <div class="chip" onclick="sc(this,'tipo')">👜 Accesorios</div>
+      <div class="chip" onclick="sc(this,'tipo')">🌸 Otro</div>
+    </div>
+  </div>
+  <div style="background:#fff;border-radius:18px;padding:18px;border:1px solid #EDE6DC;margin-bottom:28px;">
+    <div style="font-size:13px;color:#6B4E2E;font-weight:700;margin-bottom:12px;">¿Dónde vendes principalmente?</div>
+    <div class="chips" id="canal-onb-chips">
+      <div class="chip on" onclick="sc(this,'canal-onb')">🏪 Feria</div>
+      <div class="chip" onclick="sc(this,'canal-onb')">📱 Instagram</div>
+      <div class="chip" onclick="sc(this,'canal-onb')">💬 WhatsApp</div>
+      <div class="chip" onclick="sc(this,'canal-onb')">📦 Pedidos</div>
+    </div>
+  </div>
+  <button class="btn-pro" onclick="finOnb()">Abrir mi cuaderno →</button>
+  <p style="text-align:center;font-size:11px;color:#C5B8A8;margin-top:14px;">Gratis para empezar · Sin tarjeta de crédito</p>
+</div>
+</div>
+
+<!-- ══ INICIO ══════════════════════════════════════════════ -->
+<div class="screen" id="s-inicio">
+  <div class="hdr">
+    <div class="hdr-date" id="fecha-hdr"></div>
+    <div class="hdr-emp" id="hdr-emp"></div>
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;position:relative;">
+      <div class="hdr-title" style="margin-bottom:22px;" id="hdr-titulo">📒 Mi Cuaderno</div>
+      <!-- Botón perfil -->
+      <button class="btn-ghost" onclick="abrirPerfil()" style="margin-top:4px;opacity:.8;">
+        <div style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:18px;">👤</div>
+      </button>
+    </div>
+    <div class="stat-row">
+      <div class="stat-box"><div class="stat-lbl">Vendido hoy</div><div class="stat-val" id="hdr-hoy">$0</div></div>
+      <div class="stat-box"><div class="stat-lbl">Esta semana</div><div class="stat-val" id="hdr-sem">$0</div></div>
+    </div>
+  </div>
+  <div class="spacer"></div>
+  <div style="padding:0 16px;margin-bottom:12px;">
+    <button class="btn-main" onclick="go('s-feria')">
+      <div><div>🛍️ Voy a una feria</div><div style="font-size:11px;font-weight:500;opacity:.82;margin-top:2px;">Recibe recomendaciones antes de salir</div></div>
+      <span style="font-size:20px;">→</span>
+    </button>
+  </div>
+  <div class="card" style="background:#FFFBF0;border-color:#F5DEB3;">
+    <div class="clbl">💡 Para tener en cuenta</div>
+    <div id="rec-top" style="font-size:13px;color:#3D2D1A;line-height:1.55;">Registra tus primeras ventas y aquí aparecerán recomendaciones personalizadas.</div>
+  </div>
+  <div class="card" id="estrella-card" style="display:none;">
+    <div class="clbl">⭐ Lo más vendido</div>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div id="est-ico" style="width:46px;height:46px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:23px;"></div>
+      <div><div id="est-nm" style="font-weight:800;color:#3D2D1A;font-size:15px;"></div><div id="est-cant" style="font-size:12px;color:#A89882;"></div></div>
+      <div style="margin-left:auto;background:#FFF3CD;color:#8B6914;font-size:11px;font-weight:700;padding:4px 11px;border-radius:10px;">Estrella ⭐</div>
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 16px;margin-bottom:12px;">
+    <div style="background:#fff;border-radius:15px;padding:15px 16px;border:1px solid #EDE6DC;">
+      <div style="font-size:10px;color:#A89882;font-weight:700;text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px;">Total ventas</div>
+      <div id="total-v" style="font-size:21px;font-weight:800;color:#6B4E2E;">$0</div>
+    </div>
+    <div style="background:#fff;border-radius:15px;padding:15px 16px;border:1px solid #EDE6DC;">
+      <div style="font-size:10px;color:#A89882;font-weight:700;text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px;">Productos</div>
+      <div id="n-prod" style="font-size:21px;font-weight:800;color:#6B4E2E;">0</div>
+    </div>
+  </div>
+  <nav class="nav">
+    <button class="nb on" onclick="go('s-inicio')"><span class="ni">🏠</span><span class="nl">Inicio</span><div class="ndot"></div></button>
+    <button class="nb" onclick="go('s-reg')"><span class="ni">✏️</span><span class="nl">Anotar</span></button>
+    <button class="nb" onclick="go('s-cuad')"><span class="ni">📒</span><span class="nl">Cuaderno</span></button>
+    <button class="nb" onclick="go('s-fai')"><span class="ni">✨</span><span class="nl">FeriAI</span></button>
+    <button class="nb" onclick="go('s-plan')"><span class="ni">🗂️</span><span class="nl">Más</span></button>
+  </nav>
+</div>
+
+<!-- ══ REGISTRAR ══════════════════════════════════════════ -->
+<div class="screen" id="s-reg">
+  <div class="sec-title">Hoy vendí</div>
+  <div class="sec-sub">Anota rápido, como en un cuaderno</div>
+  <div class="tab-row">
+    <button class="tab-btn on" id="tab-rapido" onclick="setTab('rapido')">⚡ En tiempo real</button>
+    <button class="tab-btn" id="tab-resumen" onclick="setTab('resumen')">📝 Resumen del día</button>
+  </div>
+  <div id="modo-rapido">
+    <div style="padding:0 16px;margin-bottom:14px;">
+      <span class="lbl-s">¿Dónde vendiste?</span>
+      <div class="chips" id="canal-chips">
+        <div class="chip on" onclick="sc(this,'canal')">🏪 Feria</div>
+        <div class="chip" onclick="sc(this,'canal')">📱 Instagram</div>
+        <div class="chip" onclick="sc(this,'canal')">💬 WhatsApp</div>
+        <div class="chip" onclick="sc(this,'canal')">📦 Pedido</div>
+        <div class="chip" onclick="sc(this,'canal')">🏠 Local</div>
+      </div>
+    </div>
+    <div class="prod-grid" id="prod-grid"></div>
+    <div style="height:10px;"></div>
+    <div class="tot-bar" id="tot-bar" style="display:none;">
+      <div><div style="color:rgba(255,255,255,.7);font-size:11px;">Total a guardar</div><div style="color:#fff;font-weight:800;font-size:21px;" id="tot-val">$0</div></div>
+      <button class="savebtn" onclick="guardarVenta()">Guardar ✓</button>
+    </div>
+    <p id="hint-reg" style="text-align:center;color:#C5B8A8;font-size:13px;padding:8px;">Toca + para agregar ventas</p>
+  </div>
+  <div id="modo-resumen" style="display:none;">
+    <div style="padding:0 16px;margin-bottom:14px;">
+      <span class="lbl-s">¿Dónde vendiste?</span>
+      <div class="chips" id="canal-res-chips">
+        <div class="chip on" onclick="sc(this,'canal-res')">🏪 Feria</div>
+        <div class="chip" onclick="sc(this,'canal-res')">📱 Instagram</div>
+        <div class="chip" onclick="sc(this,'canal-res')">💬 WhatsApp</div>
+        <div class="chip" onclick="sc(this,'canal-res')">📦 Pedido</div>
+      </div>
+    </div>
+    <p style="font-size:13px;color:#A89882;padding:0 16px;margin-bottom:14px;">¿Anotaste en papel? Ingresa cuánto vendiste de cada producto.</p>
+    <div id="resumen-grid"></div>
+    <div style="padding:0 16px;margin-top:4px;"><button class="btn-pro" onclick="guardarResumen()">Guardar el día 📒</button></div>
+    <div style="height:16px;"></div>
+  </div>
+  <nav class="nav">
+    <button class="nb" onclick="go('s-inicio')"><span class="ni">🏠</span><span class="nl">Inicio</span></button>
+    <button class="nb on" onclick="go('s-reg')"><span class="ni">✏️</span><span class="nl">Anotar</span><div class="ndot"></div></button>
+    <button class="nb" onclick="go('s-cuad')"><span class="ni">📒</span><span class="nl">Cuaderno</span></button>
+    <button class="nb" onclick="go('s-fai')"><span class="ni">✨</span><span class="nl">FeriAI</span></button>
+    <button class="nb" onclick="go('s-plan')"><span class="ni">🗂️</span><span class="nl">Más</span></button>
+  </nav>
+</div>
+
+<!-- ══ CUADERNO ══════════════════════════════════════════ -->
+<div class="screen" id="s-cuad">
+  <div class="sec-title">Mi Cuaderno</div>
+  <div class="sec-sub">Todo lo que anotaste, ordenado por día</div>
+  <div id="cuad-content"></div>
+  <nav class="nav">
+    <button class="nb" onclick="go('s-inicio')"><span class="ni">🏠</span><span class="nl">Inicio</span></button>
+    <button class="nb" onclick="go('s-reg')"><span class="ni">✏️</span><span class="nl">Anotar</span></button>
+    <button class="nb on" onclick="go('s-cuad')"><span class="ni">📒</span><span class="nl">Cuaderno</span><div class="ndot"></div></button>
+    <button class="nb" onclick="go('s-fai')"><span class="ni">✨</span><span class="nl">FeriAI</span></button>
+    <button class="nb" onclick="go('s-plan')"><span class="ni">🗂️</span><span class="nl">Más</span></button>
+  </nav>
+</div>
+
+<!-- ══ FERIAI ══════════════════════════════════════════════ -->
+<div class="screen" id="s-fai">
+  <!-- Header oscuro estilo imagen -->
+  <div class="fai-header">
+    <div class="fai-tag">FeriAI</div>
+    <div class="fai-title">La IA no muestra datos:<br>te dice qué hacer con ellos.</div>
+    <div class="fai-desc">FeriAI combina reglas inteligentes con lenguaje humano. En la versión Plus se conecta a un modelo de IA para explicar mejor cada recomendación.</div>
+  </div>
+
+  <div class="fai-body">
+    <!-- CONSEJOS HOY -->
+    <div class="fai-section">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <div>
+          <div style="font-size:10px;color:#D4882A;font-weight:800;text-transform:uppercase;letter-spacing:.8px;">Consejos de hoy</div>
+          <div class="fai-section-title" style="margin-bottom:0;">Decisiones simples</div>
+        </div>
+        <button onclick="refreshConsejos()" style="background:#F5EDE4;border:none;border-radius:10px;padding:7px 12px;font-size:12px;font-weight:700;color:#6B4E2E;cursor:pointer;font-family:'Nunito',sans-serif;">↻ Actualizar</button>
+      </div>
+      <div id="consejos-lista"></div>
+    </div>
+
+    <!-- PREGUNTAS RÁPIDAS -->
+    <div class="fai-section" style="padding-bottom:16px;">
+      <div style="font-size:10px;color:#2D6A8B;font-weight:800;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;">Preguntas rápidas</div>
+      <div class="fai-section-title">Pregúntale a FeriAI</div>
+
+      <button class="pregunta-btn" onclick="responder(this,'feria')">
+        <span>¿Qué llevo a la próxima feria?</span><span class="arrow">›</span>
+      </button>
+      <div class="respuesta-box" id="resp-feria"></div>
+
+      <button class="pregunta-btn" onclick="responder(this,'precio')">
+        <span>¿Qué precio debería revisar?</span><span class="arrow">›</span>
+      </button>
+      <div class="respuesta-box" id="resp-precio"></div>
+
+      <button class="pregunta-btn" onclick="responder(this,'sobra')">
+        <span>¿Qué está sobrando?</span><span class="arrow">›</span>
+      </button>
+      <div class="respuesta-box" id="resp-sobra"></div>
+
+      <button class="pregunta-btn" onclick="responder(this,'tiempo')">
+        <span>Tengo poco tiempo, ¿qué preparo?</span><span class="arrow">›</span>
+      </button>
+      <div class="respuesta-box" id="resp-tiempo"></div>
+
+      <!-- IA Plus -->
+      <div id="fai-plus-block" style="background:#FFFBF0;border-radius:14px;padding:14px 16px;border:1px solid #F5DEB3;margin-top:4px;display:none;">
+        <div style="font-size:12px;font-weight:700;color:#8B6914;margin-bottom:6px;">✨ Respuesta de IA</div>
+        <div id="fai-ia-resp" style="font-size:13px;color:#3D2D1A;line-height:1.6;"></div>
+      </div>
+    </div>
+  </div>
+
+  <nav class="nav">
+    <button class="nb" onclick="go('s-inicio')"><span class="ni">🏠</span><span class="nl">Inicio</span></button>
+    <button class="nb" onclick="go('s-reg')"><span class="ni">✏️</span><span class="nl">Anotar</span></button>
+    <button class="nb" onclick="go('s-cuad')"><span class="ni">📒</span><span class="nl">Cuaderno</span></button>
+    <button class="nb on" onclick="go('s-fai')"><span class="ni">✨</span><span class="nl">FeriAI</span><div class="ndot"></div></button>
+    <button class="nb" onclick="go('s-plan')"><span class="ni">🗂️</span><span class="nl">Más</span></button>
+  </nav>
+</div>
+
+<!-- ══ MODO FERIA ══════════════════════════════════════════ -->
+<div class="screen" id="s-feria">
+  <div style="display:flex;align-items:center;gap:10px;padding:max(20px,env(safe-area-inset-top)) 20px 4px;">
+    <button onclick="go('s-inicio')" style="background:none;border:none;font-size:24px;cursor:pointer;line-height:1;padding:4px;">←</button>
+    <div class="sec-title" style="padding:0;">🛍️ Voy a una feria</div>
+  </div>
+  <div class="sec-sub">Cuéntame cómo es y te ayudo a prepararte</div>
+  <div class="card">
+    <span class="lbl-s">¿Qué tipo de feria es?</span>
+    <div class="chips" id="tipo-feria-chips">
+      <div class="chip on" onclick="sc(this,'tipo-feria')">🧺 Feria chica</div>
+      <div class="chip" onclick="sc(this,'tipo-feria')">🎪 Feria grande</div>
+      <div class="chip" onclick="sc(this,'tipo-feria')">🎉 Evento especial</div>
+      <div class="chip" onclick="sc(this,'tipo-feria')">🍕 Feria de comida</div>
+      <div class="chip" onclick="sc(this,'tipo-feria')">🎨 Feria artesanal</div>
+    </div>
+  </div>
+  <div class="card">
+    <span class="lbl-s">¿Cuánta energía tienes para producir?</span>
+    <div class="chips" id="energia-chips">
+      <div class="chip" onclick="sc(this,'energia')">⏱️ Poco tiempo</div>
+      <div class="chip on" onclick="sc(this,'energia')">😊 Normal</div>
+      <div class="chip" onclick="sc(this,'energia')">💪 Quiero producir harto</div>
+    </div>
+  </div>
+  <div style="padding:0 16px;margin-bottom:12px;display:flex;flex-direction:column;gap:10px;">
+    <button class="btn-sec" onclick="genBasicas()">Ver recomendaciones básicas</button>
+    <button class="btn-main" id="btn-ia" onclick="genIA()" style="justify-content:center;gap:8px;">✨ Analizar con IA — FeriAPP Plus</button>
+  </div>
+  <div class="card" style="background:#FFFBF0;border-color:#F5DEB3;" id="bloque-plus">
+    <div style="font-weight:700;color:#8B6914;margin-bottom:6px;font-size:14px;">¿Qué hace la IA en Modo Feria?</div>
+    <div style="font-size:12px;color:#A89882;line-height:1.6;margin-bottom:12px;">Analiza tus ventas reales y sobrantes para decirte exactamente qué llevar, en qué cantidad y qué priorizar.</div>
+    <button onclick="go('s-plan')" style="background:#E8A838;color:#fff;border:none;border-radius:10px;padding:9px 16px;font-weight:700;font-size:12px;cursor:pointer;font-family:'Nunito',sans-serif;">Ver FeriAPP Plus — $4.990/mes →</button>
+  </div>
+  <div id="recs-feria" style="display:none;">
+    <div style="padding:0 20px;margin-bottom:10px;font-size:10px;color:#A89882;font-weight:700;text-transform:uppercase;letter-spacing:.8px;" id="recs-lbl">Recomendaciones</div>
+    <div id="recs-lista"></div>
+  </div>
+  <div style="height:10px;"></div>
+  <nav class="nav">
+    <button class="nb" onclick="go('s-inicio')"><span class="ni">🏠</span><span class="nl">Inicio</span></button>
+    <button class="nb" onclick="go('s-reg')"><span class="ni">✏️</span><span class="nl">Anotar</span></button>
+    <button class="nb" onclick="go('s-cuad')"><span class="ni">📒</span><span class="nl">Cuaderno</span></button>
+    <button class="nb" onclick="go('s-fai')"><span class="ni">✨</span><span class="nl">FeriAI</span></button>
+    <button class="nb" onclick="go('s-plan')"><span class="ni">🗂️</span><span class="nl">Más</span></button>
+  </nav>
+</div>
+
+<!-- ══ SOBRANTES ══════════════════════════════════════════ -->
+<div class="screen" id="s-sob">
+  <div style="display:flex;align-items:center;gap:10px;padding:max(20px,env(safe-area-inset-top)) 20px 4px;">
+    <button onclick="go('s-plan')" style="background:none;border:none;font-size:24px;cursor:pointer;line-height:1;padding:4px;">←</button>
+    <div class="sec-title" style="padding:0;">📦 ¿Qué te sobró?</div>
+  </div>
+  <div class="sec-sub">Registra lo que llevaste y lo que volvió. Así planificamos mejor.</div>
+  <div id="sob-grid"></div>
+  <div style="padding:0 16px;margin-top:4px;"><button class="btn-pro" onclick="guardarSob()">Guardar sobrantes 📦</button></div>
+  <div style="height:16px;"></div>
+  <nav class="nav">
+    <button class="nb" onclick="go('s-inicio')"><span class="ni">🏠</span><span class="nl">Inicio</span></button>
+    <button class="nb" onclick="go('s-reg')"><span class="ni">✏️</span><span class="nl">Anotar</span></button>
+    <button class="nb" onclick="go('s-cuad')"><span class="ni">📒</span><span class="nl">Cuaderno</span></button>
+    <button class="nb" onclick="go('s-fai')"><span class="ni">✨</span><span class="nl">FeriAI</span></button>
+    <button class="nb on" onclick="go('s-plan')"><span class="ni">🗂️</span><span class="nl">Más</span></button>
+  </nav>
+</div>
+
+<!-- ══ PRODUCTOS ══════════════════════════════════════════ -->
+<div class="screen" id="s-prods">
+  <div style="display:flex;justify-content:space-between;align-items:center;padding:22px 20px 4px;">
+    <div class="sec-title" style="padding:0;">Mis productos</div>
+    <button onclick="toggleForm()" style="background:#6B4E2E;color:#fff;border:none;border-radius:12px;padding:9px 16px;font-weight:700;font-size:13px;cursor:pointer;font-family:'Nunito',sans-serif;">+ Agregar</button>
+  </div>
+  <div class="sec-sub">Hasta 8 productos en plan gratuito</div>
+  <div id="form-prod" style="display:none;background:#fff;border-radius:18px;padding:20px;margin:0 16px 14px;border:2px solid #6B4E2E;">
+    <div style="font-family:'Lora',serif;font-size:17px;color:#3D2D1A;font-weight:700;margin-bottom:16px;">Nuevo producto</div>
+    <span class="lbl-s">Ícono</span>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;" id="emoji-sel">
+      <button class="chip on" onclick="selEmoji(this,'🍫')">🍫</button>
+      <button class="chip" onclick="selEmoji(this,'🍪')">🍪</button>
+      <button class="chip" onclick="selEmoji(this,'🎂')">🎂</button>
+      <button class="chip" onclick="selEmoji(this,'🧁')">🧁</button>
+      <button class="chip" onclick="selEmoji(this,'🥐')">🥐</button>
+      <button class="chip" onclick="selEmoji(this,'🍯')">🍯</button>
+      <button class="chip" onclick="selEmoji(this,'🧶')">🧶</button>
+      <button class="chip" onclick="selEmoji(this,'💍')">💍</button>
+      <button class="chip" onclick="selEmoji(this,'🎀')">🎀</button>
+      <button class="chip" onclick="selEmoji(this,'🕯️')">🕯️</button>
+      <button class="chip" onclick="selEmoji(this,'🌸')">🌸</button>
+      <button class="chip" onclick="selEmoji(this,'📦')">📦</button>
+    </div>
+    <span class="lbl-s">Nombre *</span>
+    <input class="fi" id="np-nm" placeholder="Ej: Brownie de chocolate" style="margin-bottom:11px;">
+    <span class="lbl-s">Precio de venta *</span>
+    <input class="fi" type="number" id="np-pr" placeholder="Ej: 1500" style="margin-bottom:11px;" inputmode="numeric">
+    <div id="costo-wrap">
+      <span class="lbl-s">Costo aproximado</span>
+      <input class="fi" type="number" id="np-co" placeholder="Ej: 600 (opcional)" style="margin-bottom:9px;" inputmode="numeric">
+    </div>
+    <label style="display:flex;align-items:center;gap:9px;margin-bottom:14px;cursor:pointer;">
+      <input type="checkbox" id="np-sc" onchange="toggleSC()" style="width:18px;height:18px;">
+      <span style="font-size:13px;color:#A89882;">No sé mi costo todavía</span>
+    </label>
+    <div id="sc-note" style="display:none;background:#FFF9F0;border-radius:10px;padding:10px 13px;margin-bottom:14px;font-size:12px;color:#E8A838;">📝 Cuando tengas tiempo, te ayudamos a calcular el costo de este producto.</div>
+    <div style="display:flex;gap:8px;">
+      <button onclick="toggleForm()" class="btn-sec" style="flex:1;padding:11px;font-size:13px;">Cancelar</button>
+      <button onclick="agregarProd()" class="btn-pro" style="flex:2;padding:11px;font-size:13px;">Agregar producto</button>
+    </div>
+  </div>
+  <div id="prod-list"></div>
+  <div style="height:10px;"></div>
+  <nav class="nav">
+    <button class="nb" onclick="go('s-inicio')"><span class="ni">🏠</span><span class="nl">Inicio</span></button>
+    <button class="nb" onclick="go('s-reg')"><span class="ni">✏️</span><span class="nl">Anotar</span></button>
+    <button class="nb" onclick="go('s-cuad')"><span class="ni">📒</span><span class="nl">Cuaderno</span></button>
+    <button class="nb" onclick="go('s-fai')"><span class="ni">✨</span><span class="nl">FeriAI</span></button>
+    <button class="nb on" onclick="go('s-plan')"><span class="ni">🗂️</span><span class="nl">Más</span></button>
+  </nav>
+</div>
+
+<!-- ══ MÁS (hub de secciones) ══════════════════════════════ -->
+<div class="screen" id="s-plan">
+  <div class="sec-title">Más opciones</div>
+  <div class="sec-sub">Gestiona tu emprendimiento</div>
+
+  <!-- Accesos rápidos -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 16px;margin-bottom:16px;">
+    <button onclick="go('s-prods')" style="background:#fff;border:1px solid #EDE6DC;border-radius:16px;padding:16px;text-align:left;cursor:pointer;font-family:'Nunito',sans-serif;">
+      <div style="font-size:26px;margin-bottom:6px;">🏷️</div>
+      <div style="font-weight:700;color:#3D2D1A;font-size:13px;">Mis productos</div>
+      <div style="font-size:11px;color:#A89882;margin-top:2px;" id="n-prods-hub">0 productos</div>
+    </button>
+    <button onclick="go('s-sob')" style="background:#fff;border:1px solid #EDE6DC;border-radius:16px;padding:16px;text-align:left;cursor:pointer;font-family:'Nunito',sans-serif;">
+      <div style="font-size:26px;margin-bottom:6px;">📦</div>
+      <div style="font-weight:700;color:#3D2D1A;font-size:13px;">Sobrantes</div>
+      <div style="font-size:11px;color:#A89882;margin-top:2px;">Registrar hoy</div>
+    </button>
+    <button onclick="go('s-feria')" style="background:#fff;border:1px solid #EDE6DC;border-radius:16px;padding:16px;text-align:left;cursor:pointer;font-family:'Nunito',sans-serif;">
+      <div style="font-size:26px;margin-bottom:6px;">🛍️</div>
+      <div style="font-weight:700;color:#3D2D1A;font-size:13px;">Modo Feria</div>
+      <div style="font-size:11px;color:#A89882;margin-top:2px;">Prepara la próxima</div>
+    </button>
+    <button onclick="abrirPerfil()" style="background:#fff;border:1px solid #EDE6DC;border-radius:16px;padding:16px;text-align:left;cursor:pointer;font-family:'Nunito',sans-serif;">
+      <div style="font-size:26px;margin-bottom:6px;">👤</div>
+      <div style="font-weight:700;color:#3D2D1A;font-size:13px;">Mi perfil</div>
+      <div style="font-size:11px;color:#A89882;margin-top:2px;" id="hub-emp-nm">Configura tu nombre</div>
+    </button>
+  </div>
+
+  <!-- Banner piloto -->
+  <div style="background:linear-gradient(135deg,#6B4E2E,#9B7552);border-radius:18px;padding:18px 22px;margin:0 16px 14px;color:#fff;">
+    <div style="font-size:10px;opacity:.75;margin-bottom:4px;letter-spacing:.8px;text-transform:uppercase;">🎁 Oferta piloto municipal</div>
+    <div style="font-family:'Lora',serif;font-size:18px;font-weight:700;margin-bottom:5px;">60 días FeriAPP Plus gratis</div>
+    <div style="font-size:12px;opacity:.82;">Luego $3.990/mes por 6 meses como precio fundador</div>
+  </div>
+
+  <!-- Planes -->
+  <div class="plan-box plan-free">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+      <div><div class="plan-nm">FeriAPP Libre</div><div class="plan-price">Gratis</div></div>
+      <span style="font-size:30px;">📒</span>
+    </div>
+    <div class="plan-feat">Registrar ventas (ilimitado)</div>
+    <div class="plan-feat">Hasta 8 productos</div>
+    <div class="plan-feat">Vista cuaderno — últimos 30 días</div>
+    <div class="plan-feat">FeriAI básico (reglas inteligentes)</div>
+    <div class="plan-feat">Sobrantes y modo feria básico</div>
+  </div>
+
+  <div class="plan-box plan-plus" style="margin-top:14px;">
+    <div class="badge-pop">⭐ Recomendado para el piloto</div>
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;">
+      <div><div class="plan-nm">FeriAPP Plus ✨</div><div class="plan-price">$4.990<span style="font-size:13px;font-weight:500;color:#A89882;">/mes</span></div><div style="font-size:10px;color:#A89882;margin-top:2px;">Lanzamiento · luego $5.990</div></div>
+      <span style="font-size:30px;">🚀</span>
+    </div>
+    <div class="plan-feat" style="border-color:#F5DEB3;">Todo lo de FeriAPP Libre</div>
+    <div class="plan-feat" style="font-weight:700;border-color:#F5DEB3;">✨ Productos ilimitados</div>
+    <div class="plan-feat" style="font-weight:700;border-color:#F5DEB3;">✨ FeriAI con IA real (Claude)</div>
+    <div class="plan-feat" style="font-weight:700;border-color:#F5DEB3;">✨ Modo Feria con IA ilimitado</div>
+    <div class="plan-feat" style="font-weight:700;border-color:#F5DEB3;">✨ Alerta automática si suben costos</div>
+    <div class="plan-feat" style="font-weight:700;border-color:#F5DEB3;">✨ Resúmenes semanales con IA</div>
+    <button onclick="toast('Próximamente disponible 🚀')" class="btn-pro" style="margin-top:18px;">Activar FeriAPP Plus</button>
+    <p style="text-align:center;font-size:11px;color:#A89882;margin-top:10px;">Sin contrato · Cancela cuando quieras</p>
+  </div>
+
+  <!-- Config API key -->
+  <div style="background:#F5EDE4;border-radius:18px;padding:18px 22px;margin:14px 16px;">
+    <div style="font-size:12px;color:#6B4E2E;font-weight:700;margin-bottom:8px;">🔑 API Key para IA</div>
+    <input class="fi" id="api-key-inp" type="password" placeholder="sk-ant-..." style="margin-bottom:8px;font-size:13px;">
+    <button onclick="guardarKey()" style="background:#6B4E2E;color:#fff;border:none;border-radius:10px;padding:9px 16px;font-weight:700;font-size:12px;cursor:pointer;font-family:'Nunito',sans-serif;width:100%;">Guardar API key</button>
+    <p style="font-size:10px;color:#A89882;margin-top:8px;">Solo se guarda en tu dispositivo. Obtenla en console.anthropic.com</p>
+  </div>
+
+  <!-- Cuenta y respaldo -->
+  <div style="background:#fff;border:1px solid #EDE6DC;border-radius:18px;padding:18px 22px;margin:14px 16px;">
+    <div style="font-size:12px;color:#6B4E2E;font-weight:800;margin-bottom:4px;">☁️ Cuenta y respaldo</div>
+    <p id="sync-status" style="font-size:11px;color:#A89882;line-height:1.45;margin-bottom:12px;">Trabajando solo en este dispositivo.</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+      <button id="login-google-btn" onclick="loginGoogle()" style="background:#6B4E2E;color:#fff;border:none;border-radius:10px;padding:10px 12px;font-weight:800;font-size:12px;cursor:pointer;font-family:'Nunito',sans-serif;">Entrar con Google</button>
+      <button id="sync-now-btn" onclick="syncNow()" style="background:#FAF7F3;color:#6B4E2E;border:1px solid #EDE6DC;border-radius:10px;padding:10px 12px;font-weight:800;font-size:12px;cursor:pointer;font-family:'Nunito',sans-serif;">Sincronizar</button>
+    </div>
+    <button id="logout-btn" onclick="logoutGoogle()" style="display:none;background:#FAF7F3;color:#6B4E2E;border:1px solid #EDE6DC;border-radius:10px;padding:10px 12px;font-weight:800;font-size:12px;cursor:pointer;font-family:'Nunito',sans-serif;width:100%;margin-top:8px;">Cerrar sesión</button>
+    <a id="admin-link" href="/admin" style="display:none;margin-top:10px;font-size:12px;color:#6B4E2E;font-weight:800;text-decoration:none;">Abrir panel admin →</a>
+  </div>
+  <div style="height:10px;"></div>
+
+  <nav class="nav">
+    <button class="nb" onclick="go('s-inicio')"><span class="ni">🏠</span><span class="nl">Inicio</span></button>
+    <button class="nb" onclick="go('s-reg')"><span class="ni">✏️</span><span class="nl">Anotar</span></button>
+    <button class="nb" onclick="go('s-cuad')"><span class="ni">📒</span><span class="nl">Cuaderno</span></button>
+    <button class="nb" onclick="go('s-fai')"><span class="ni">✨</span><span class="nl">FeriAI</span></button>
+    <button class="nb on" onclick="go('s-plan')"><span class="ni">🗂️</span><span class="nl">Más</span><div class="ndot"></div></button>
+  </nav>
+</div>
+
+<!-- ══ MODAL PERFIL ════════════════════════════════════════ -->
+<div class="modal-bg" id="modal-perfil" style="display:none;" onclick="cerrarPerfil(event)">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div style="font-family:'Lora',serif;font-size:20px;font-weight:700;color:#3D2D1A;margin-bottom:20px;">Mi emprendimiento</div>
+
+    <span class="lbl-s">Nombre de tu emprendimiento</span>
+    <input class="fi" id="perfil-nombre" placeholder="Ej: Dulces de Carmen" maxlength="40" style="margin-bottom:16px;">
+
+    <span class="lbl-s">¿Qué vendes?</span>
+    <div class="chips" id="perfil-tipo-chips" style="margin-bottom:16px;">
+      <div class="chip on" onclick="sc(this,'perfil-tipo')">🍰 Repostería</div>
+      <div class="chip" onclick="sc(this,'perfil-tipo')">🧶 Artesanía</div>
+      <div class="chip" onclick="sc(this,'perfil-tipo')">👜 Accesorios</div>
+      <div class="chip" onclick="sc(this,'perfil-tipo')">🌸 Otro</div>
+    </div>
+
+    <span class="lbl-s">¿Dónde vendes principalmente?</span>
+    <div class="chips" id="perfil-canal-chips" style="margin-bottom:24px;">
+      <div class="chip on" onclick="sc(this,'perfil-canal')">🏪 Feria</div>
+      <div class="chip" onclick="sc(this,'perfil-canal')">📱 Instagram</div>
+      <div class="chip" onclick="sc(this,'perfil-canal')">💬 WhatsApp</div>
+      <div class="chip" onclick="sc(this,'perfil-canal')">📦 Pedidos</div>
+    </div>
+
+    <button class="btn-pro" onclick="guardarPerfil()">Guardar cambios</button>
+    <button class="btn-sec" onclick="cerrarPerfil()" style="margin-top:10px;">Cancelar</button>
+  </div>
+</div>
+
+<div id="toast"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+// ── STORAGE ───────────────────────────────────────────────
+const LS = {
+  get:(k,d)=>{ try{return JSON.parse(localStorage.getItem('fa_'+k))??d;}catch{return d;} },
+  set:(k,v)=>{ try{localStorage.setItem('fa_'+k,JSON.stringify(v));}catch{} }
+};
+
+// ── ESTADO ────────────────────────────────────────────────
+let productos = LS.get('prods',[]);
+let ventas    = LS.get('ventas',[]);
+let sobrantes = LS.get('sobs',[]);
+let perfil    = LS.get('perfil',{ nombre:'', tipo:'Repostería', canal:'Feria' });
+let conteos   = {};
+let resumenData = {};
+let emojiSel  = '🍫';
+let formVis   = false;
+let tabActual = 'rapido';
+let apiKey    = LS.get('apikey','');
+let sb = null;
+let sbUser = null;
+let sbIsAdmin = false;
+let sbReady = false;
+let syncTimer = null;
+
+// ── UTILS ─────────────────────────────────────────────────
+const clp = n => '$'+Math.round(n).toLocaleString('es-CL');
+const uid = () => (globalThis.crypto?.randomUUID ? globalThis.crypto.randomUUID() : Math.random().toString(36).slice(2,9));
+const isUuid = v => /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v||'');
+const hoyStr = () => new Date().toISOString().split('T')[0];
+const fmtFecha = iso => {
+  const d = new Date(iso+'T12:00:00');
+  return d.toLocaleDateString('es-CL',{weekday:'long',day:'numeric',month:'long'});
+};
+const COLORES = ['#E8D5C4','#FFF3CD','#F8BBD9','#C8E6C9','#D1C4E9','#B2EBF2','#DCEDC8','#FFCCBC'];
+
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2600);
+}
+
+// ── SUPABASE ──────────────────────────────────────────────
+async function initSupabase(){
+  if(!window.supabase){ updateSyncUi('Sin conexión Supabase en esta carga.'); return; }
+  try{
+    const cfg=await fetch('/api/config',{cache:'no-store'}).then(r=>r.ok?r.json():null).catch(()=>null);
+    if(!cfg?.supabaseUrl||!cfg?.supabaseAnonKey){
+      updateSyncUi('Modo local. En Vercel agrega SUPABASE_URL y SUPABASE_ANON_KEY.');
+      return;
+    }
+    sb=window.supabase.createClient(cfg.supabaseUrl,cfg.supabaseAnonKey);
+    const {data}=await sb.auth.getSession();
+    sbUser=data.session?.user||null;
+    sbReady=!!sbUser;
+    sb.auth.onAuthStateChange(async (_event,session)=>{
+      sbUser=session?.user||null;
+      sbReady=!!sbUser;
+      if(sbUser) await afterLogin();
+      else { sbIsAdmin=false; updateSyncUi(); }
+    });
+    if(sbUser) await afterLogin();
+    else updateSyncUi();
+  }catch(err){
+    console.warn('Supabase init error',err);
+    updateSyncUi('No pude conectar Supabase. La app sigue en modo local.');
+  }
+}
+
+async function afterLogin(){
+  updateSyncUi('Conectando datos...');
+  await ensureLocalUuidIds();
+  await syncToCloud();
+  await loadFromCloud();
+  await checkAdmin();
+  trackEvent('login');
+  renderAll();
+  updateSyncUi('Datos respaldados en la nube.');
+}
+
+async function loginGoogle(){
+  if(!sb){ toast('Primero configura Supabase en Vercel'); return; }
+  await sb.auth.signInWithOAuth({
+    provider:'google',
+    options:{redirectTo:location.origin+location.pathname}
+  });
+}
+
+async function logoutGoogle(){
+  if(!sb)return;
+  await sb.auth.signOut();
+  sbUser=null; sbReady=false; sbIsAdmin=false;
+  updateSyncUi();
+  toast('Sesión cerrada');
+}
+
+async function syncNow(){
+  if(!sbUser){ toast('Entra con Google para respaldar tus datos'); return; }
+  await ensureLocalUuidIds();
+  await syncToCloud();
+  await loadFromCloud();
+  renderAll();
+  toast('Datos sincronizados ✓');
+}
+
+function scheduleSync(eventName,metadata={}){
+  if(!sbUser)return;
+  window.clearTimeout(syncTimer);
+  syncTimer=window.setTimeout(()=>syncToCloud().catch(console.warn),600);
+  trackEvent(eventName,metadata);
+}
+
+async function syncToCloud(){
+  if(!sbUser||!sb)return;
+  await sb.from('perfiles').upsert({
+    id:sbUser.id,
+    nombre_emprendimiento:perfil.nombre||null,
+    tipo:perfil.tipo||null,
+    canal_principal:perfil.canal||null
+  });
+  if(productos.length){
+    await sb.from('productos').upsert(productos.map(p=>({
+      id:p.id,
+      user_id:sbUser.id,
+      nombre:p.nombre,
+      precio:p.precio,
+      costo:p.costo,
+      sin_costo:!!p.sinCosto,
+      emoji:p.emoji||'📦',
+      color:p.color||'#E8D5C4',
+      activo:p.activo!==false
+    })));
+  }
+  if(ventas.length){
+    await sb.from('ventas').upsert(ventas.map(v=>({
+      id:v.id,
+      user_id:sbUser.id,
+      fecha:v.fecha,
+      canal:v.canal||perfil.canal||'Feria',
+      items:v.items||[]
+    })));
+  }
+  if(sobrantes.length){
+    await sb.from('sobrantes').upsert(sobrantes.map(s=>({
+      id:s.id,
+      user_id:sbUser.id,
+      fecha:s.fecha,
+      items:s.items||[]
+    })));
+  }
+  updateSyncUi('Última sincronización: '+new Date().toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'}));
+}
+
+async function loadFromCloud(){
+  if(!sbUser||!sb)return;
+  const [perfilRes,prodsRes,ventasRes,sobsRes]=await Promise.all([
+    sb.from('perfiles').select('*').eq('id',sbUser.id).maybeSingle(),
+    sb.from('productos').select('*').eq('user_id',sbUser.id).eq('activo',true).order('created_at',{ascending:true}),
+    sb.from('ventas').select('*').eq('user_id',sbUser.id).order('fecha',{ascending:false}).order('created_at',{ascending:false}),
+    sb.from('sobrantes').select('*').eq('user_id',sbUser.id).order('fecha',{ascending:false}).order('created_at',{ascending:false})
+  ]);
+  if(perfilRes.data){
+    perfil={
+      nombre:perfilRes.data.nombre_emprendimiento||perfil.nombre||'',
+      tipo:perfilRes.data.tipo||perfil.tipo||'Repostería',
+      canal:perfilRes.data.canal_principal||perfil.canal||'Feria'
+    };
+    LS.set('perfil',perfil);
+  }
+  if(prodsRes.data?.length){
+    productos=prodsRes.data.map(p=>({
+      id:p.id,nombre:p.nombre,precio:p.precio,costo:p.costo,
+      sinCosto:!!p.sin_costo,emoji:p.emoji||'📦',color:p.color||'#E8D5C4',activo:p.activo
+    }));
+    LS.set('prods',productos);
+  }
+  if(ventasRes.data?.length){
+    ventas=ventasRes.data.map(v=>({id:v.id,fecha:v.fecha,canal:v.canal,items:v.items||[]}));
+    LS.set('ventas',ventas);
+  }
+  if(sobsRes.data?.length){
+    sobrantes=sobsRes.data.map(s=>({id:s.id,fecha:s.fecha,items:s.items||[]}));
+    LS.set('sobs',sobrantes);
+  }
+}
+
+async function checkAdmin(){
+  if(!sbUser||!sb)return;
+  const {data,error}=await sb.from('admin_users').select('user_id').eq('user_id',sbUser.id).maybeSingle();
+  sbIsAdmin=!!data&&!error;
+  updateSyncUi();
+}
+
+function updateSyncUi(customMsg){
+  const status=document.getElementById('sync-status');
+  const login=document.getElementById('login-google-btn');
+  const logout=document.getElementById('logout-btn');
+  const admin=document.getElementById('admin-link');
+  if(!status)return;
+  if(customMsg) status.textContent=customMsg;
+  else status.textContent=sbUser?`Conectada como ${sbUser.email}. Tus datos se respaldan en Supabase.`:'Trabajando solo en este dispositivo.';
+  if(login) login.style.display=sbUser?'none':'block';
+  if(logout) logout.style.display=sbUser?'block':'none';
+  if(admin) admin.style.display=sbIsAdmin?'inline-block':'none';
+}
+
+async function trackEvent(eventName,metadata={}){
+  if(!sbUser||!sb)return;
+  await sb.from('usage_events').insert({user_id:sbUser.id,event_name:eventName,metadata});
+}
+
+function ensureLocalUuidIds(){
+  const map={};
+  productos=productos.map(p=>{
+    if(isUuid(p.id))return p;
+    const nextId=uid();
+    map[p.id]=nextId;
+    return {...p,id:nextId};
+  });
+  const fixItems=items=>(items||[]).map(i=>({...i,pid:map[i.pid]||i.pid}));
+  ventas=ventas.map(v=>({...(isUuid(v.id)?v:{...v,id:uid()}),items:fixItems(v.items)}));
+  sobrantes=sobrantes.map(s=>({...(isUuid(s.id)?s:{...s,id:uid()}),items:fixItems(s.items)}));
+  LS.set('prods',productos); LS.set('ventas',ventas); LS.set('sobs',sobrantes);
+}
+
+function renderAll(){
+  initInicio();
+  renderGrid();
+  renderResumenGrid();
+  renderProds();
+  initHub();
+  refreshConsejos();
+}
+
+// ── NAVEGACIÓN ────────────────────────────────────────────
+function go(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  const map={'s-inicio':initInicio,'s-reg':initReg,'s-cuad':renderCuad,'s-prods':renderProds,'s-sob':initSob,'s-fai':initFeriAI,'s-plan':initHub};
+  if(map[id]) map[id]();
+}
+
+function sc(el,grupo){
+  document.querySelectorAll('#'+grupo+'-chips .chip').forEach(c=>c.classList.remove('on'));
+  el.classList.add('on');
+}
+
+// ── ONBOARDING ────────────────────────────────────────────
+function finOnb(){
+  const nombre = document.getElementById('onb-nombre-emp').value.trim();
+  perfil.nombre = nombre;
+  perfil.tipo   = document.querySelector('#tipo-chips .chip.on')?.textContent?.replace(/^\S+\s/,'')||'Repostería';
+  perfil.canal  = document.querySelector('#canal-onb-chips .chip.on')?.textContent?.replace(/^\S+\s/,'')||'Feria';
+  LS.set('perfil',perfil);
+  scheduleSync('onboarding_completado',{tipo:perfil.tipo,canal:perfil.canal});
+  go('s-inicio');
+}
+
+// ── STATS ─────────────────────────────────────────────────
+function calcStats(){
+  const s={};
+  productos.forEach(p=>s[p.id]={vendidas:0,ingresos:0,sobro:0,vecesSobro:0});
+  ventas.forEach(v=>v.items.forEach(i=>{
+    if(!s[i.pid])return;
+    const p=productos.find(x=>x.id===i.pid);
+    s[i.pid].vendidas+=i.q;
+    s[i.pid].ingresos+=(p?.precio||0)*i.q;
+  }));
+  sobrantes.forEach(v=>v.items.forEach(i=>{
+    if(!s[i.pid])return;
+    s[i.pid].sobro+=i.sobro;
+    if(i.sobro>0)s[i.pid].vecesSobro++;
+  }));
+  return s;
+}
+
+function genRecs(){
+  const st=calcStats(); const r=[];
+  const vals=Object.entries(st).sort((a,b)=>b[1].vendidas-a[1].vendidas);
+  const max=vals[0]?.[1].vendidas||1;
+  vals.forEach(([pid,s])=>{
+    const p=productos.find(x=>x.id===pid); if(!p)return;
+    if(s.vendidas>=max*.7) r.push({tipo:'estrella',txt:`✨ ${p.nombre} se vende harto. Para la próxima feria, lleva más de este.`});
+    if(s.vendidas>0&&s.vendidas<max*.2) r.push({tipo:'alerta',txt:`⚠️ ${p.nombre} casi no se mueve. Considera llevar menos o revisar el precio.`});
+    if(s.vecesSobro>=2) r.push({tipo:'sobra',txt:`📦 ${p.nombre} suele sobrarte. La próxima vez prepara menos.`});
+    if(p.costo){
+      const mg=(p.precio-p.costo)/p.precio;
+      if(mg<.25) r.push({tipo:'precio',txt:`💸 Ojo: ${p.nombre} te deja poca ganancia (${Math.round(mg*100)}%). Podrías subir el precio.`});
+      if(mg>.5&&s.vendidas>=max*.3) r.push({tipo:'conviene',txt:`💚 ${p.nombre} vende bien y deja buena ganancia. ¡Priorízalo!`});
+    }
+  });
+  return r;
+}
+
+// ── INICIO ────────────────────────────────────────────────
+function initInicio(){
+  const d=new Date().toLocaleDateString('es-CL',{weekday:'long',day:'numeric',month:'long'});
+  document.getElementById('fecha-hdr').textContent=d.charAt(0).toUpperCase()+d.slice(1);
+
+  // Nombre emprendimiento en header
+  const empEl=document.getElementById('hdr-emp');
+  const titEl=document.getElementById('hdr-titulo');
+  if(perfil.nombre){
+    empEl.textContent=perfil.nombre;
+    titEl.textContent='📒 Mi Cuaderno';
+  } else {
+    empEl.textContent='';
+    titEl.textContent='📒 Mi Cuaderno';
+  }
+
+  const hoy=hoyStr();
+  const vhoy=ventas.filter(v=>v.fecha===hoy);
+  const thoy=vhoy.reduce((s,v)=>s+v.items.reduce((ss,i)=>{const p=productos.find(x=>x.id===i.pid);return ss+(p?p.precio*i.q:0);},0),0);
+  document.getElementById('hdr-hoy').textContent=clp(thoy);
+  const tall=ventas.reduce((s,v)=>s+v.items.reduce((ss,i)=>{const p=productos.find(x=>x.id===i.pid);return ss+(p?p.precio*i.q:0);},0),0);
+  document.getElementById('hdr-sem').textContent=clp(tall);
+  document.getElementById('total-v').textContent=clp(tall);
+  document.getElementById('n-prod').textContent=productos.length;
+
+  const st=calcStats();
+  const top=Object.entries(st).sort((a,b)=>b[1].vendidas-a[1].vendidas)[0];
+  const ec=document.getElementById('estrella-card');
+  if(top&&top[1].vendidas>0){
+    const p=productos.find(x=>x.id===top[0]);
+    ec.style.display='block';
+    const ei=document.getElementById('est-ico'); ei.style.background=p.color||'#EDE6DC'; ei.textContent=p.emoji||'📦';
+    document.getElementById('est-nm').textContent=p.nombre;
+    document.getElementById('est-cant').textContent=top[1].vendidas+' unidades vendidas';
+  } else { ec.style.display='none'; }
+
+  const r=genRecs();
+  document.getElementById('rec-top').textContent=r[0]?.txt||'Registra tus primeras ventas y aquí aparecerán recomendaciones personalizadas.';
+}
+
+// ── HUB ──────────────────────────────────────────────────
+function initHub(){
+  document.getElementById('n-prods-hub').textContent=productos.length+' producto'+(productos.length!==1?'s':'');
+  document.getElementById('hub-emp-nm').textContent=perfil.nombre||'Configura tu nombre';
+  const ki=document.getElementById('api-key-inp');
+  if(ki) ki.value=apiKey?'••••••••••••':'';
+  updateSyncUi();
+}
+
+// ── FERIAI ────────────────────────────────────────────────
+function initFeriAI(){ refreshConsejos(); }
+
+function refreshConsejos(){
+  const st=calcStats();
+  const lista=document.getElementById('consejos-lista');
+  const consejos=[];
+
+  if(!productos.length){
+    lista.innerHTML='<div class="empty"><div class="empty-ico">✨</div>Agrega productos y registra ventas para ver consejos personalizados.</div>';
+    return;
+  }
+
+  const vals=Object.entries(st).sort((a,b)=>b[1].vendidas-a[1].vendidas);
+  const max=vals[0]?.[1].vendidas||0;
+
+  if(max===0){
+    lista.innerHTML='<div class="consejo azul"><div class="consejo-titulo">Empieza a anotar</div><div class="consejo-desc">Registra tus ventas de hoy para que FeriAI pueda darte consejos útiles sobre qué producir y qué llevar.</div></div>';
+    return;
+  }
+
+  vals.forEach(([pid,s])=>{
+    const p=productos.find(x=>x.id===pid); if(!p)return;
+
+    // Producto estrella
+    if(s.vendidas>=max*.7&&s.vendidas>0){
+      consejos.push({clase:'verde',titulo:`${p.nombre} se está moviendo harto`,desc:`En los últimos registros suma ${s.vendidas} vendidos. Para la próxima feria conviene tenerlo como producto seguro.`});
+    }
+    // Casi no se vende
+    if(s.vendidas>0&&s.vendidas<max*.2){
+      consejos.push({clase:'rojo',titulo:`${p.nombre} casi no se mueve`,desc:`Solo ${s.vendidas} unidades vendidas. Considera llevar menos o probar un precio diferente.`});
+    }
+    // Suele sobrar
+    if(s.vecesSobro>=2){
+      const prom=Math.round(s.sobro/s.vecesSobro);
+      consejos.push({clase:'amber',titulo:`${p.nombre} suele sobrar`,desc:`La próxima vez lleva menos o combínalo con un producto que se venda mejor. Promedio sobrante: ${prom} unidades.`});
+    }
+    // Sin costo
+    if(p.sinCosto||p.costo===null){
+      consejos.push({clase:'azul',titulo:`Falta el costo de ${p.nombre}`,desc:`No pasa nada si no lo sabes hoy. Cuando lo tengas, FeriAI podrá decirte si realmente conviene venderlo.`});
+    }
+    // Margen bajo
+    if(p.costo){
+      const mg=(p.precio-p.costo)/p.precio;
+      if(mg<.25&&s.vendidas>0){
+        consejos.push({clase:'amber',titulo:`${p.nombre} te deja poca ganancia`,desc:`Se vende, pero el precio de venta y el costo están muy cerca. Subir un poco el precio podría ayudarte.`});
+      }
+    }
+  });
+
+  if(!consejos.length){
+    consejos.push({clase:'verde',titulo:'Todo se ve bien por ahora',desc:'Sigue registrando ventas para que FeriAI pueda darte consejos más precisos con el tiempo.'});
+  }
+
+  lista.innerHTML=consejos.slice(0,4).map(c=>
+    `<div class="consejo ${c.clase}"><div class="consejo-titulo">${c.titulo}</div><div class="consejo-desc">${c.desc}</div></div>`
+  ).join('');
+}
+
+// Preguntas rápidas
+function responder(btn, tipo){
+  const respId='resp-'+tipo;
+  const respEl=document.getElementById(respId);
+
+  // Toggle si ya está visible
+  if(respEl.classList.contains('visible')){
+    respEl.classList.remove('visible');
+    btn.querySelector('.arrow').textContent='›';
+    return;
+  }
+
+  // Cerrar otras
+  document.querySelectorAll('.respuesta-box').forEach(r=>{r.classList.remove('visible'); r.innerHTML='';});
+  document.querySelectorAll('.pregunta-btn .arrow').forEach(a=>a.textContent='›');
+
+  btn.querySelector('.arrow').textContent='↓';
+  respEl.classList.add('visible');
+
+  const st=calcStats();
+  const vals=Object.entries(st).sort((a,b)=>b[1].vendidas-a[1].vendidas);
+
+  // Respuesta por reglas (gratis)
+  let respTxt='';
+  if(tipo==='feria'){
+    if(!vals.length||!vals[0][1].vendidas){ respTxt='Registra al menos una feria para recibir esta recomendación.'; }
+    else {
+      const top3=vals.slice(0,3).map(([pid])=>productos.find(x=>x.id===pid)?.nombre).filter(Boolean);
+      respTxt=`Para la próxima feria, parte con ${top3[0]||'tu producto más vendido'}. Prepararía cerca de ${Math.ceil((vals[0][1].vendidas/Math.max(ventas.length,1))*1.2)} unidades y luego sumaría los productos que ya se mueven bien${top3[1]?' como '+top3[1]:''}. Lleva siempre un poco más de tu estrella.`;
+    }
+  } else if(tipo==='precio'){
+    const conProblema=vals.filter(([pid])=>{ const p=productos.find(x=>x.id===pid); return p?.costo&&(p.precio-p.costo)/p.precio<.25; });
+    if(!conProblema.length){ respTxt='Por ahora tus precios se ven bien en relación a sus costos. Sigue registrando para un análisis más preciso.'; }
+    else {
+      const p=productos.find(x=>x.id===conProblema[0][0]);
+      respTxt=`Revisa el precio de ${p?.nombre}. Su costo de producción está muy cerca de lo que cobras. Una pequeña subida de precio mejoraría bastante tu ganancia.`;
+    }
+  } else if(tipo==='sobra'){
+    const conSobra=vals.filter(([,s])=>s.vecesSobro>=2);
+    if(!conSobra.length){ respTxt='No hay productos con sobrantes repetidos por ahora. ¡Eso es buena señal! Sigue registrando después de cada feria.'; }
+    else {
+      const nombres=conSobra.slice(0,2).map(([pid])=>productos.find(x=>x.id===pid)?.nombre).filter(Boolean).join(' y ');
+      respTxt=`${nombres} suelen sobrarte. Para la próxima feria, prepara un 20% menos de ${conSobra[0]?productos.find(x=>x.id===conSobra[0][0])?.nombre:'este producto'}. Es mejor quedarse corta que volver con producto.`;
+    }
+  } else if(tipo==='tiempo'){
+    if(!vals.length||!vals[0][1].vendidas){ respTxt='Agrega tus productos y registra ventas para recibir esta recomendación.'; }
+    else {
+      const top=vals.slice(0,2).map(([pid])=>productos.find(x=>x.id===pid)?.nombre).filter(Boolean);
+      respTxt=`Con poco tiempo, enfócate solo en ${top.join(' y ')||'tus 2 productos más seguros'}. No arriesgues con productos nuevos o que no se mueven bien. Mejor poco y fresco que mucho y variado.`;
+    }
+  }
+
+  respEl.innerHTML=respTxt;
+
+  // Si hay API key, también pide respuesta IA
+  if(apiKey) preguntarIA(tipo, respEl);
+}
+
+async function preguntarIA(tipo, respEl){
+  const st=calcStats();
+  const resumen=productos.map(p=>{const s=st[p.id]||{};return `- ${p.nombre}: ${s.vendidas||0} vendidas, sobró ${s.sobro||0}, precio ${clp(p.precio)}${p.costo?', costo '+clp(p.costo):''}`;}).join('\n');
+  const preguntas={
+    feria:'¿Qué debería llevar a mi próxima feria y en qué cantidad aproximada?',
+    precio:'¿Qué precio debería revisar y por qué?',
+    sobra:'¿Qué está sobrando y qué debería hacer al respecto?',
+    tiempo:'Tengo poco tiempo para producir, ¿qué debería preparar primero?'
+  };
+  const prompt=`Eres FeriAI, asistente de FeriAPP para microemprendedoras en Chile. Responde en español chileno cercano, máximo 2 oraciones, sin tecnicismos.\n\nDatos del negocio:\n${resumen||'Sin datos aún'}\n\nPregunta: ${preguntas[tipo]}\n\nResponde directamente, sin introducción.`;
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:150,messages:[{role:'user',content:prompt}]})
+    });
+    const data=await res.json();
+    if(data.error)return;
+    const iaResp=data.content?.map(b=>b.text||'').join('').trim();
+    if(iaResp){
+      respEl.innerHTML+=`<div style="margin-top:10px;padding-top:10px;border-top:1px dashed #C8D8C8;font-size:12px;color:#2D6A4F;font-weight:700;">✨ FeriAI con IA dice:</div><div style="font-size:13px;color:#2D6A4F;margin-top:4px;">${iaResp}</div>`;
+    }
+  }catch{}
+}
+
+// ── REGISTRO ──────────────────────────────────────────────
+function initReg(){ renderGrid(); renderResumenGrid(); }
+
+function setTab(t){
+  tabActual=t;
+  document.getElementById('tab-rapido').className='tab-btn'+(t==='rapido'?' on':'');
+  document.getElementById('tab-resumen').className='tab-btn'+(t==='resumen'?' on':'');
+  document.getElementById('modo-rapido').style.display=t==='rapido'?'block':'none';
+  document.getElementById('modo-resumen').style.display=t==='resumen'?'block':'none';
+}
+
+function renderGrid(){
+  const g=document.getElementById('prod-grid'); g.innerHTML='';
+  if(!productos.length){
+    g.innerHTML='<div class="empty" style="grid-column:span 2"><div class="empty-ico">🏷️</div>Primero agrega tus productos en la sección Más → Mis productos</div>';
+    return;
+  }
+  productos.forEach(p=>{
+    const cnt=conteos[p.id]||0;
+    const d=document.createElement('div');
+    d.className='prod-card'+(cnt?' has':''); d.id='pc-'+p.id;
+    d.innerHTML=`<div class="prod-top"><div class="prod-ico" style="background:${p.color||'#EDE6DC'}">${p.emoji||'📦'}</div><div><div class="prod-nm">${p.nombre}</div><div class="prod-pr">${clp(p.precio)}</div></div></div><div class="ctr"><button class="cb cminus" onclick="cambiar('${p.id}',-1)">−</button><span class="cnum" id="cn-${p.id}">${cnt}</span><button class="cb cplus" onclick="cambiar('${p.id}',1)">+</button></div>`;
+    g.appendChild(d);
+  });
+  updTotal();
+}
+
+function renderResumenGrid(){
+  const g=document.getElementById('resumen-grid'); g.innerHTML='';
+  productos.forEach(p=>{
+    g.innerHTML+=`<div class="sob-card"><div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;"><div class="prod-ico" style="background:${p.color||'#EDE6DC'};width:36px;height:36px;border-radius:10px;font-size:19px;">${p.emoji||'📦'}</div><div><div style="font-weight:700;font-size:14px;color:#3D2D1A;">${p.nombre}</div><div style="font-size:11px;color:#A89882;">${clp(p.precio)} c/u</div></div></div><input class="sob-inp" type="number" inputmode="numeric" placeholder="0 unidades" id="res-${p.id}" value="${resumenData[p.id]||''}"></div>`;
+  });
+}
+
+function cambiar(id,d){
+  conteos[id]=Math.max(0,(conteos[id]||0)+d);
+  const el=document.getElementById('cn-'+id); if(el)el.textContent=conteos[id];
+  const pc=document.getElementById('pc-'+id); if(pc)pc.className='prod-card'+(conteos[id]?' has':'');
+  updTotal();
+}
+
+function updTotal(){
+  let tot=0;
+  Object.entries(conteos).forEach(([id,q])=>{const p=productos.find(x=>x.id===id);if(p)tot+=p.precio*q;});
+  const bar=document.getElementById('tot-bar'),hint=document.getElementById('hint-reg');
+  if(tot>0){bar.style.display='flex';hint.style.display='none';document.getElementById('tot-val').textContent=clp(tot);}
+  else{bar.style.display='none';hint.style.display='block';}
+}
+
+function guardarVenta(){
+  const items=Object.entries(conteos).filter(([,q])=>q>0).map(([pid,q])=>({pid,q}));
+  if(!items.length){toast('Agrega al menos una venta');return;}
+  const canal=document.querySelector('#canal-chips .chip.on')?.textContent?.replace(/^\S+\s/,'')||'Feria';
+  ventas.unshift({id:uid(),fecha:hoyStr(),canal,items}); LS.set('ventas',ventas);
+  scheduleSync('venta_rapida_guardada',{canal,total_items:items.length,total_unidades:items.reduce((s,i)=>s+i.q,0)});
+  conteos={}; renderGrid(); toast('¡Venta guardada! ✓');
+}
+
+function guardarResumen(){
+  const items=productos.map(p=>{const q=parseInt(document.getElementById('res-'+p.id)?.value||0);return q>0?{pid:p.id,q}:null;}).filter(Boolean);
+  if(!items.length){toast('Ingresa al menos una cantidad');return;}
+  const canal=document.querySelector('#canal-res-chips .chip.on')?.textContent?.replace(/^\S+\s/,'')||'Feria';
+  ventas.unshift({id:uid(),fecha:hoyStr(),canal,items}); LS.set('ventas',ventas);
+  scheduleSync('resumen_dia_guardado',{canal,total_items:items.length,total_unidades:items.reduce((s,i)=>s+i.q,0)});
+  resumenData={}; renderResumenGrid(); toast('¡Día guardado! ✓');
+}
+
+// ── CUADERNO ──────────────────────────────────────────────
+function renderCuad(){
+  const c=document.getElementById('cuad-content');
+  const limite=new Date(); limite.setDate(limite.getDate()-30);
+  const vFilt=ventas.filter(v=>new Date(v.fecha+'T12:00:00')>=limite);
+  const dias={};
+  vFilt.forEach(v=>{if(!dias[v.fecha])dias[v.fecha]=[];dias[v.fecha].push(v);});
+  const sorted=Object.entries(dias).sort((a,b)=>b[0].localeCompare(a[0]));
+  if(!sorted.length){c.innerHTML='<div class="empty"><div class="empty-ico">📒</div>Tu cuaderno está vacío.<br>¡Empieza anotando una venta!</div>';return;}
+  c.innerHTML=sorted.map(([fecha,vs])=>{
+    const agg={};
+    vs.forEach(v=>v.items.forEach(i=>{agg[i.pid]=(agg[i.pid]||0)+i.q;}));
+    const tot=Object.entries(agg).reduce((s,[pid,q])=>{const p=productos.find(x=>x.id===pid);return s+(p?p.precio*q:0);},0);
+    const df=fmtFecha(fecha);
+    const items=Object.entries(agg).map(([pid,q])=>{const p=productos.find(x=>x.id===pid);return p?`<div class="dia-item"><div class="dia-left"><span style="font-size:16px;">${p.emoji||'📦'}</span><div><div class="dia-nm">${p.nombre}</div><div class="dia-cant">× ${q}</div></div></div><div class="dia-monto">${clp(p.precio*q)}</div></div>`:''}).join('');
+    return `<div class="dia-card"><div class="dia-hdr"><div class="dia-fecha">${df.charAt(0).toUpperCase()+df.slice(1)}</div><div class="dia-total">${clp(tot)}</div></div><div class="dia-items">${items}</div><span class="canal-tag">🏷️ ${vs[0].canal}</span></div>`;
+  }).join('');
+}
+
+// ── PRODUCTOS ─────────────────────────────────────────────
+function toggleForm(){
+  formVis=!formVis;
+  document.getElementById('form-prod').style.display=formVis?'block':'none';
+}
+function selEmoji(el,e){
+  document.querySelectorAll('#emoji-sel .chip').forEach(c=>c.classList.remove('on'));
+  el.classList.add('on'); emojiSel=e;
+}
+function toggleSC(){
+  const s=document.getElementById('np-sc').checked;
+  document.getElementById('costo-wrap').style.display=s?'none':'block';
+  document.getElementById('sc-note').style.display=s?'block':'none';
+}
+function agregarProd(){
+  const nm=document.getElementById('np-nm').value.trim();
+  const pr=parseInt(document.getElementById('np-pr').value);
+  if(!nm||!pr){toast('Nombre y precio son necesarios');return;}
+  if(productos.length>=8){toast('Límite de 8 productos en plan gratuito');return;}
+  const sc=document.getElementById('np-sc').checked;
+  const co=sc?null:(parseInt(document.getElementById('np-co').value)||null);
+  const idx=productos.length%8;
+  productos.push({id:uid(),nombre:nm,precio:pr,costo:co,sinCosto:sc,emoji:emojiSel,color:COLORES[idx]});
+  LS.set('prods',productos);
+  scheduleSync('producto_creado',{nombre:nm,sin_costo:sc});
+  document.getElementById('np-nm').value=''; document.getElementById('np-pr').value=''; document.getElementById('np-co').value='';
+  document.getElementById('np-sc').checked=false; toggleSC();
+  toggleForm(); renderProds(); toast('Producto agregado ✓');
+}
+function eliminarProd(id){
+  if(!confirm('¿Eliminar este producto?'))return;
+  const prod=productos.find(p=>p.id===id);
+  productos=productos.filter(p=>p.id!==id); LS.set('prods',productos); scheduleSync('producto_eliminado',{nombre:prod?.nombre||''}); renderProds(); toast('Producto eliminado');
+}
+function renderProds(){
+  const el=document.getElementById('prod-list');
+  const st=calcStats();
+  if(!productos.length){el.innerHTML='<div class="empty"><div class="empty-ico">🏷️</div>Agrega tu primer producto</div>';return;}
+  el.innerHTML=productos.map(p=>{
+    const s=st[p.id]||{};
+    const mg=p.costo?Math.round(((p.precio-p.costo)/p.precio)*100):null;
+    const mb=mg!==null?`<span class="badge ${mg>40?'bg':mg>20?'bw':'bi'}">${mg}% ganancia</span>`:(p.sinCosto?`<span class="badge bw">Sin costo aún</span>`:'');
+    const sold=s.vendidas?`<span class="badge bi">${s.vendidas} vendidas</span>`:'';
+    return `<div class="pli"><div class="prod-ico" style="background:${p.color};width:48px;height:48px;border-radius:13px;font-size:24px;flex-shrink:0;">${p.emoji}</div><div style="flex:1;min-width:0;"><div class="pli-nm">${p.nombre}</div><div class="pli-sub">${clp(p.precio)}${p.costo?' · costo '+clp(p.costo):''}</div><div style="display:flex;gap:5px;margin-top:5px;flex-wrap:wrap;">${sold}${mb}</div></div><button onclick="eliminarProd('${p.id}')" style="background:none;border:none;font-size:18px;cursor:pointer;padding:4px;color:#C5B8A8;">🗑</button></div>`;
+  }).join('');
+}
+
+// ── SOBRANTES ─────────────────────────────────────────────
+function initSob(){
+  const g=document.getElementById('sob-grid'); g.innerHTML='';
+  productos.forEach(p=>{
+    g.innerHTML+=`<div class="sob-card"><div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;"><div class="prod-ico" style="background:${p.color||'#EDE6DC'};width:38px;height:38px;border-radius:10px;font-size:20px;">${p.emoji||'📦'}</div><div style="font-weight:700;font-size:14px;color:#3D2D1A;">${p.nombre}</div></div><div class="sob-grid"><div><div class="lbl-s">Llevé</div><input class="sob-inp" type="number" inputmode="numeric" placeholder="0" id="sl-${p.id}"></div><div><div class="lbl-s">Me sobró</div><input class="sob-inp sobro" type="number" inputmode="numeric" placeholder="0" id="ss-${p.id}"></div></div></div>`;
+  });
+  if(!productos.length)g.innerHTML='<div class="empty"><div class="empty-ico">📦</div>Primero agrega tus productos</div>';
+}
+function guardarSob(){
+  const items=productos.map(p=>{
+    const ll=parseInt(document.getElementById('sl-'+p.id)?.value||0);
+    const so=parseInt(document.getElementById('ss-'+p.id)?.value||0);
+    return(ll>0||so>0)?{pid:p.id,lleve:ll,sobro:so}:null;
+  }).filter(Boolean);
+  if(!items.length){toast('Ingresa al menos un producto');return;}
+  sobrantes.unshift({id:uid(),fecha:hoyStr(),items}); LS.set('sobs',sobrantes);
+  scheduleSync('sobrantes_guardados',{total_items:items.length,total_sobrantes:items.reduce((s,i)=>s+i.sobro,0)});
+  toast('Sobrantes guardados ✓'); go('s-inicio');
+}
+
+// ── MODO FERIA ────────────────────────────────────────────
+function getChip(g){return document.querySelector('#'+g+'-chips .chip.on')?.textContent?.replace(/^.\s/,'')||'';}
+
+function genBasicas(){
+  scheduleSync('modo_feria_basico');
+  const tipo=getChip('tipo-feria'),energia=getChip('energia');
+  const r=genRecs(); const extra=[];
+  if(energia.toLowerCase().includes('poco'))extra.unshift({txt:'⏱️ Como tienes poco tiempo, enfócate en tus 3 productos más seguros.',tipo:'feria'});
+  if(tipo.toLowerCase().includes('grande'))extra.push({txt:'🎪 Para feria grande, prepara un 30% más de lo habitual.',tipo:'feria'});
+  if(tipo.toLowerCase().includes('chica'))extra.push({txt:'🧺 Para feria chica, mejor poco y fresco que mucho con riesgo de sobrantes.',tipo:'feria'});
+  if(!r.length&&!extra.length)extra.push({txt:'📒 Registra ventas de al menos 2 ferias para recomendaciones más precisas.',tipo:'feria'});
+  mostrarRecs([...extra,...r],'Recomendaciones básicas',false);
+}
+
+async function genIA(){
+  if(!apiKey){toast('Agrega tu API key en Más → Configuración'); go('s-plan');return;}
+  scheduleSync('modo_feria_ia');
+  const btn=document.getElementById('btn-ia');
+  btn.textContent='⏳ Analizando...'; btn.disabled=true;
+  const tipo=getChip('tipo-feria'),energia=getChip('energia');
+  const st=calcStats();
+  const resumen=productos.map(p=>{const s=st[p.id]||{};return `- ${p.nombre}: precio ${clp(p.precio)}${p.costo?', costo '+clp(p.costo):''}, ${s.vendidas||0} vendidas, sobró ${s.sobro||0} en total`;}).join('\n');
+  const prompt=`Eres el asistente de FeriAPP para microemprendedoras en Chile. Habla en español chileno cercano, sin tecnicismos.\n\nVa a una ${tipo||'feria'} con ${energia.toLowerCase().includes('poco')?'poco tiempo':'tiempo normal'}.\n\nProductos:\n${resumen||'Sin datos aún'}\n\nDa 4 recomendaciones en JSON puro sin backticks:\n{"recs":[{"emoji":"...","texto":"..."},{"emoji":"...","texto":"..."},{"emoji":"...","texto":"..."},{"emoji":"...","texto":"..."}]}\n\nUsa nombres reales de productos. Tono: socia que conoce su negocio.`;
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:500,messages:[{role:'user',content:prompt}]})});
+    const data=await res.json();
+    if(data.error)throw new Error();
+    const text=data.content?.map(b=>b.text||'').join('').replace(/```json|```/g,'').trim();
+    const parsed=JSON.parse(text);
+    mostrarRecs(parsed.recs.map(r=>({txt:`${r.emoji} ${r.texto}`,tipo:'ia'})),'✨ Tu asistente FeriAPP recomienda',true);
+  }catch{toast('Error con IA. Verifica tu API key.');genBasicas();}
+  btn.textContent='✨ Analizar con IA — FeriAPP Plus'; btn.disabled=false;
+}
+
+function mostrarRecs(r,lbl,esIA){
+  document.getElementById('recs-feria').style.display='block';
+  document.getElementById('recs-lbl').textContent=lbl;
+  document.getElementById('recs-lista').innerHTML=r.map(x=>`<div class="rec${esIA||x.tipo==='ia'?' ia':''}" style="margin:0 16px 10px;"><div class="rec-txt">${x.txt}</div></div>`).join('');
+  document.getElementById('bloque-plus').style.display=esIA?'none':'block';
+}
+
+// ── PERFIL ────────────────────────────────────────────────
+function abrirPerfil(){
+  document.getElementById('perfil-nombre').value=perfil.nombre||'';
+  // Seleccionar chips del perfil
+  document.querySelectorAll('#perfil-tipo-chips .chip').forEach(c=>{
+    c.classList.toggle('on', c.textContent.includes(perfil.tipo||'Repostería'));
+  });
+  document.querySelectorAll('#perfil-canal-chips .chip').forEach(c=>{
+    c.classList.toggle('on', c.textContent.includes(perfil.canal||'Feria'));
+  });
+  document.getElementById('modal-perfil').style.display='flex';
+}
+
+function cerrarPerfil(e){
+  if(!e||e.target===document.getElementById('modal-perfil')){
+    document.getElementById('modal-perfil').style.display='none';
+  }
+}
+
+function guardarPerfil(){
+  perfil.nombre = document.getElementById('perfil-nombre').value.trim();
+  perfil.tipo   = document.querySelector('#perfil-tipo-chips .chip.on')?.textContent?.replace(/^\S+\s/,'')||perfil.tipo;
+  perfil.canal  = document.querySelector('#perfil-canal-chips .chip.on')?.textContent?.replace(/^\S+\s/,'')||perfil.canal;
+  LS.set('perfil',perfil);
+  scheduleSync('perfil_actualizado',{tipo:perfil.tipo,canal:perfil.canal});
+  cerrarPerfil();
+  initInicio();
+  toast('Perfil guardado ✓');
+}
+
+// ── API KEY ───────────────────────────────────────────────
+function guardarKey(){
+  const v=document.getElementById('api-key-inp').value.trim();
+  if(v&&!v.startsWith('sk-ant-')){toast('La key debe empezar con sk-ant-');return;}
+  apiKey=v; LS.set('apikey',v);
+  toast(v?'API key guardada ✓':'API key eliminada');
+}
+
+// ── SERVICE WORKER ────────────────────────────────────────
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>{}));
+}
+
+// ── INIT ─────────────────────────────────────────────────
+// Si ya pasó el onboarding, ir directo al inicio
+if(LS.get('perfil',null)!==null && productos.length>0){
+  go('s-inicio');
+} else if(LS.get('perfil',null)!==null){
+  go('s-inicio');
+}
+// Si no hay perfil guardado, se queda en onboarding (pantalla por defecto)
+initInicio();
+initSupabase();
+</script>
+</body>
+</html>

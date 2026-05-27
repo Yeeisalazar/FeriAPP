@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#1f7a5c" />
+    <title>FeriAPP Admin</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+      :root {
+        color-scheme: light;
+        --green: #1f7a5c;
+        --green-dark: #155c46;
+        --cream: #fff8ed;
+        --ink: #25324d;
+        --muted: #667085;
+        --line: #e2e6ee;
+        --coral: #e76f51;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: var(--cream);
+        color: var(--ink);
+        font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      .shell {
+        width: min(1180px, 100%);
+        margin: 0 auto;
+        padding: 18px;
+      }
+
+      header {
+        display: flex;
+        gap: 16px;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 18px;
+      }
+
+      h1,
+      h2,
+      p {
+        margin-top: 0;
+      }
+
+      h1 {
+        margin-bottom: 4px;
+        font-size: 1.8rem;
+      }
+
+      p {
+        color: var(--muted);
+      }
+
+      button {
+        min-height: 42px;
+        border: 0;
+        border-radius: 8px;
+        background: var(--green);
+        color: white;
+        padding: 10px 14px;
+        font: inherit;
+        font-weight: 800;
+        cursor: pointer;
+      }
+
+      button.secondary {
+        border: 1px solid var(--line);
+        background: white;
+        color: var(--ink);
+      }
+
+      .panel,
+      .metric,
+      .user-card {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: white;
+        box-shadow: 0 14px 36px rgba(37, 50, 77, 0.08);
+      }
+
+      .panel {
+        padding: 18px;
+      }
+
+      .metrics {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 12px;
+        margin-bottom: 16px;
+      }
+
+      .metric {
+        padding: 14px;
+      }
+
+      .metric span {
+        display: block;
+        color: var(--muted);
+        font-size: 0.82rem;
+        font-weight: 800;
+      }
+
+      .metric strong {
+        display: block;
+        margin-top: 6px;
+        font-size: 1.5rem;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
+        gap: 16px;
+      }
+
+      .list {
+        display: grid;
+        gap: 10px;
+      }
+
+      .user-card {
+        padding: 13px;
+      }
+
+      .user-card strong {
+        display: block;
+      }
+
+      .user-card small {
+        color: var(--muted);
+      }
+
+      .hidden {
+        display: none;
+      }
+
+      .notice {
+        border-left: 4px solid var(--coral);
+        padding: 12px 14px;
+        border-radius: 8px;
+        background: #fff3f0;
+      }
+
+      @media (max-width: 820px) {
+        header,
+        .grid {
+          display: grid;
+        }
+
+        .metrics {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="shell">
+      <header>
+        <div>
+          <h1>FeriAPP Admin</h1>
+          <p>Panel privado para revisar uso, registros y señales del producto.</p>
+        </div>
+        <div>
+          <button id="login">Entrar con Google</button>
+          <button class="secondary hidden" id="logout">Salir</button>
+        </div>
+      </header>
+
+      <section class="panel" id="status">
+        <p>Conecta con tu cuenta administradora para ver los datos.</p>
+      </section>
+
+      <section class="hidden" id="dashboard">
+        <div class="metrics" id="metrics"></div>
+
+        <div class="grid">
+          <section class="panel">
+            <h2>Usuarios y negocios</h2>
+            <div class="list" id="users"></div>
+          </section>
+
+          <section class="panel">
+            <h2>Actividad reciente</h2>
+            <div class="list" id="events"></div>
+          </section>
+        </div>
+      </section>
+    </main>
+
+    <script type="module">
+      const loginButton = document.querySelector("#login");
+      const logoutButton = document.querySelector("#logout");
+      const statusBox = document.querySelector("#status");
+      const dashboard = document.querySelector("#dashboard");
+      const metricsBox = document.querySelector("#metrics");
+      const usersBox = document.querySelector("#users");
+      const eventsBox = document.querySelector("#events");
+
+      const config = await fetch("/api/config").then((response) => response.json());
+
+      if (!config.supabaseUrl || !config.supabaseAnonKey) {
+        statusBox.innerHTML = '<div class="notice">Faltan variables de entorno SUPABASE_URL y SUPABASE_ANON_KEY en Vercel.</div>';
+        throw new Error("Missing Supabase config");
+      }
+
+      const client = window.supabase.createClient(config.supabaseUrl, config.supabaseAnonKey);
+      const { data } = await client.auth.getSession();
+
+      loginButton.addEventListener("click", async () => {
+        await client.auth.signInWithOAuth({
+          provider: "google",
+          options: { redirectTo: `${location.origin}/admin.html` },
+        });
+      });
+
+      logoutButton.addEventListener("click", async () => {
+        await client.auth.signOut();
+        location.reload();
+      });
+
+      if (!data.session) {
+        statusBox.innerHTML = "<p>Inicia sesión con el Google que marcaste como administradora.</p>";
+      } else {
+        await loadDashboard();
+      }
+
+      async function loadDashboard() {
+        loginButton.classList.add("hidden");
+        logoutButton.classList.remove("hidden");
+
+        const adminCheck = await client.from("admin_users").select("user_id").limit(1);
+        if (adminCheck.error) {
+          statusBox.innerHTML = '<div class="notice">Tu usuario no tiene acceso admin o falta ejecutar la migración SQL.</div>';
+          return;
+        }
+
+        const [profiles, products, sales, leftovers, events] = await Promise.all([
+          client.from("perfiles").select("*").order("created_at", { ascending: false }),
+          client.from("productos").select("id,user_id,activo"),
+          client.from("ventas").select("id,user_id,fecha,canal,items,created_at").order("created_at", { ascending: false }).limit(12),
+          client.from("sobrantes").select("id,user_id,fecha,items,created_at"),
+          client.from("usage_events").select("*").order("created_at", { ascending: false }).limit(12),
+        ]);
+
+        const errors = [profiles, products, sales, leftovers, events].filter((result) => result.error);
+        if (errors.length) {
+          statusBox.innerHTML = `<div class="notice">${errors[0].error.message}</div>`;
+          return;
+        }
+
+        statusBox.classList.add("hidden");
+        dashboard.classList.remove("hidden");
+
+        metricsBox.innerHTML = [
+          metric("Usuarios", profiles.data.length),
+          metric("Productos", products.data.length),
+          metric("Ventas", sales.data.length),
+          metric("Sobrantes", leftovers.data.length),
+        ].join("");
+
+        const productCount = countBy(products.data, "user_id");
+        const salesCount = countBy(sales.data, "user_id");
+        usersBox.innerHTML =
+          profiles.data
+            .map((profile) => {
+              const title = profile.nombre_emprendimiento || "Sin nombre todavía";
+              return `
+                <article class="user-card">
+                  <strong>${escapeHtml(title)}</strong>
+                  <small>${escapeHtml(profile.tipo || "Rubro pendiente")} · ${escapeHtml(profile.canal_principal || "Canal pendiente")}</small>
+                  <small>${productCount[profile.id] || 0} productos · ${salesCount[profile.id] || 0} ventas recientes · ${profile.es_premium ? "Plus" : "Libre"}</small>
+                </article>
+              `;
+            })
+            .join("") || "<p>No hay usuarios todavía.</p>";
+
+        eventsBox.innerHTML =
+          events.data
+            .map(
+              (event) => `
+                <article class="user-card">
+                  <strong>${escapeHtml(event.event_name)}</strong>
+                  <small>${new Date(event.created_at).toLocaleString("es-CL")}</small>
+                </article>
+              `,
+            )
+            .join("") || "<p>Aún no hay eventos de uso.</p>";
+      }
+
+      function metric(label, value) {
+        return `<article class="metric"><span>${label}</span><strong>${value}</strong></article>`;
+      }
+
+      function countBy(rows, key) {
+        return rows.reduce((acc, row) => {
+          acc[row[key]] = (acc[row[key]] || 0) + 1;
+          return acc;
+        }, {});
+      }
+
+      function escapeHtml(value) {
+        return String(value ?? "")
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#039;");
+      }
+    </script>
+  </body>
+</html>
