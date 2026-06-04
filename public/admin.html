@@ -209,7 +209,15 @@
         throw new Error("Missing Supabase config");
       }
 
-      const client = window.supabase.createClient(config.supabaseUrl, config.supabaseAnonKey);
+      const client = window.supabase.createClient(config.supabaseUrl, config.supabaseAnonKey, {
+        auth: {
+          autoRefreshToken: true,
+          detectSessionInUrl: true,
+          persistSession: true,
+        },
+      });
+
+      await hydrateSessionFromRedirect(client);
       const { data } = await client.auth.getSession();
 
       loginButton.addEventListener("click", async () => {
@@ -234,9 +242,11 @@
         loginButton.classList.add("hidden");
         logoutButton.classList.remove("hidden");
 
-        const adminCheck = await client.from("admin_users").select("user_id").limit(1);
-        if (adminCheck.error) {
-          statusBox.innerHTML = '<div class="notice">Tu usuario no tiene acceso admin o falta ejecutar la migración SQL.</div>';
+        const { data: sessionData } = await client.auth.getSession();
+        const userId = sessionData.session?.user?.id;
+        const adminCheck = await client.from("admin_users").select("user_id").eq("user_id", userId).maybeSingle();
+        if (adminCheck.error || !adminCheck.data) {
+          statusBox.innerHTML = '<div class="notice">Entraste con Google, pero este correo todavía no está marcado como administrador en Supabase.</div>';
           return;
         }
 
@@ -311,6 +321,23 @@
           .replaceAll(">", "&gt;")
           .replaceAll('"', "&quot;")
           .replaceAll("'", "&#039;");
+      }
+
+      async function hydrateSessionFromRedirect(client) {
+        const hash = new URLSearchParams(location.hash.replace(/^#/, ""));
+        const accessToken = hash.get("access_token");
+        const refreshToken = hash.get("refresh_token");
+
+        if (!accessToken || !refreshToken) return;
+
+        const { error } = await client.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken,
+        });
+
+        if (!error) {
+          history.replaceState(null, document.title, `${location.origin}/admin.html`);
+        }
       }
     </script>
   </body>
