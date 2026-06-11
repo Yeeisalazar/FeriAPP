@@ -560,9 +560,9 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
 
   <!-- Banner piloto -->
   <div style="background:linear-gradient(135deg,#6B4E2E,#9B7552);border-radius:18px;padding:18px 22px;margin:0 16px 14px;color:#fff;">
-    <div style="font-size:10px;opacity:.75;margin-bottom:4px;letter-spacing:.8px;text-transform:uppercase;">🎁 Oferta piloto municipal</div>
-    <div style="font-family:'Lora',serif;font-size:18px;font-weight:700;margin-bottom:5px;">60 días FeriAPP Plus gratis</div>
-    <div style="font-size:12px;opacity:.82;">Luego $3.990/mes por 6 meses como precio fundador</div>
+    <div style="font-size:10px;opacity:.75;margin-bottom:4px;letter-spacing:.8px;text-transform:uppercase;">🎁 Oferta piloto FeriAPP</div>
+    <div style="font-family:'Lora',serif;font-size:18px;font-weight:700;margin-bottom:5px;">60 días de FeriAPP Plus gratis</div>
+    <div style="font-size:12px;opacity:.82;">Luego precio fundador desde $3.990/mes por 6 meses</div>
   </div>
 
   <!-- Planes -->
@@ -571,35 +571,28 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
       <div><div class="plan-nm">FeriAPP Libre</div><div class="plan-price">Gratis</div></div>
       <span style="font-size:30px;">📒</span>
     </div>
-    <div class="plan-feat">Registrar ventas (ilimitado)</div>
-    <div class="plan-feat">Hasta 8 productos</div>
+    <div class="plan-feat">Registrar ventas ilimitadas</div>
+    <div class="plan-feat">Hasta 8 productos activos</div>
     <div class="plan-feat">Vista cuaderno — últimos 30 días</div>
-    <div class="plan-feat">FeriAI básico (reglas inteligentes)</div>
-    <div class="plan-feat">Sobrantes y modo feria básico</div>
+    <div class="plan-feat">Sobrantes y Modo Feria básico</div>
+    <div class="plan-feat">FeriAI básico con reglas inteligentes</div>
+    <div class="plan-feat">Respaldo con cuenta Google</div>
   </div>
 
   <div class="plan-box plan-plus" style="margin-top:14px;">
     <div class="badge-pop">⭐ Recomendado para el piloto</div>
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;">
-      <div><div class="plan-nm">FeriAPP Plus ✨</div><div class="plan-price">$4.990<span style="font-size:13px;font-weight:500;color:#A89882;">/mes</span></div><div style="font-size:10px;color:#A89882;margin-top:2px;">Lanzamiento · luego $5.990</div></div>
+      <div><div class="plan-nm">FeriAPP Plus ✨</div><div class="plan-price">$4.990<span style="font-size:13px;font-weight:500;color:#A89882;">/mes</span></div><div style="font-size:10px;color:#A89882;margin-top:2px;">Piloto: 60 días gratis · fundador $3.990</div></div>
       <span style="font-size:30px;">🚀</span>
     </div>
     <div class="plan-feat" style="border-color:#F5DEB3;">Todo lo de FeriAPP Libre</div>
     <div class="plan-feat" style="font-weight:700;border-color:#F5DEB3;">✨ Productos ilimitados</div>
-    <div class="plan-feat" style="font-weight:700;border-color:#F5DEB3;">✨ FeriAI con IA real (Claude)</div>
-    <div class="plan-feat" style="font-weight:700;border-color:#F5DEB3;">✨ Modo Feria con IA ilimitado</div>
-    <div class="plan-feat" style="font-weight:700;border-color:#F5DEB3;">✨ Alerta automática si suben costos</div>
-    <div class="plan-feat" style="font-weight:700;border-color:#F5DEB3;">✨ Resúmenes semanales con IA</div>
+    <div class="plan-feat" style="font-weight:700;border-color:#F5DEB3;">✨ FeriAI listo para usar, sin configurar claves</div>
+    <div class="plan-feat" style="font-weight:700;border-color:#F5DEB3;">✨ Modo Feria con cantidades sugeridas</div>
+    <div class="plan-feat" style="font-weight:700;border-color:#F5DEB3;">✨ Alertas si suben costos o ganas poco</div>
+    <div class="plan-feat" style="font-weight:700;border-color:#F5DEB3;">✨ Resumen semanal con próximos pasos</div>
     <button onclick="toast('Próximamente disponible 🚀')" class="btn-pro" style="margin-top:18px;">Activar FeriAPP Plus</button>
     <p style="text-align:center;font-size:11px;color:#A89882;margin-top:10px;">Sin contrato · Cancela cuando quieras</p>
-  </div>
-
-  <!-- Config API key -->
-  <div style="background:#F5EDE4;border-radius:18px;padding:18px 22px;margin:14px 16px;">
-    <div style="font-size:12px;color:#6B4E2E;font-weight:700;margin-bottom:8px;">🔑 API Key para IA</div>
-    <input class="fi" id="api-key-inp" type="password" placeholder="sk-ant-..." style="margin-bottom:8px;font-size:13px;">
-    <button onclick="guardarKey()" style="background:#6B4E2E;color:#fff;border:none;border-radius:10px;padding:9px 16px;font-weight:700;font-size:12px;cursor:pointer;font-family:'Nunito',sans-serif;width:100%;">Guardar API key</button>
-    <p style="font-size:10px;color:#A89882;margin-top:8px;">Solo se guarda en tu dispositivo. Obtenla en console.anthropic.com</p>
   </div>
 
   <!-- Cuenta y respaldo -->
@@ -675,7 +668,6 @@ let resumenData = {};
 let emojiSel  = '🍫';
 let formVis   = false;
 let tabActual = 'rapido';
-let apiKey    = LS.get('apikey','');
 let sb = null;
 let sbUser = null;
 let sbIsAdmin = false;
@@ -995,8 +987,6 @@ function initInicio(){
 function initHub(){
   document.getElementById('n-prods-hub').textContent=productos.length+' producto'+(productos.length!==1?'s':'');
   document.getElementById('hub-emp-nm').textContent=perfil.nombre||'Configura tu nombre';
-  const ki=document.getElementById('api-key-inp');
-  if(ki) ki.value=apiKey?'••••••••••••':'';
   updateSyncUi();
 }
 
@@ -1112,34 +1102,6 @@ function responder(btn, tipo){
   }
 
   respEl.innerHTML=respTxt;
-
-  // Si hay API key, también pide respuesta IA
-  if(apiKey) preguntarIA(tipo, respEl);
-}
-
-async function preguntarIA(tipo, respEl){
-  const st=calcStats();
-  const resumen=productos.map(p=>{const s=st[p.id]||{};return `- ${p.nombre}: ${s.vendidas||0} vendidas, sobró ${s.sobro||0}, precio ${clp(p.precio)}${p.costo?', costo '+clp(p.costo):''}`;}).join('\n');
-  const preguntas={
-    feria:'¿Qué debería llevar a mi próxima feria y en qué cantidad aproximada?',
-    precio:'¿Qué precio debería revisar y por qué?',
-    sobra:'¿Qué está sobrando y qué debería hacer al respecto?',
-    tiempo:'Tengo poco tiempo para producir, ¿qué debería preparar primero?'
-  };
-  const prompt=`Eres FeriAI, asistente de FeriAPP para microemprendedoras en Chile. Responde en español chileno cercano, máximo 2 oraciones, sin tecnicismos.\n\nDatos del negocio:\n${resumen||'Sin datos aún'}\n\nPregunta: ${preguntas[tipo]}\n\nResponde directamente, sin introducción.`;
-  try{
-    const res=await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:150,messages:[{role:'user',content:prompt}]})
-    });
-    const data=await res.json();
-    if(data.error)return;
-    const iaResp=data.content?.map(b=>b.text||'').join('').trim();
-    if(iaResp){
-      respEl.innerHTML+=`<div style="margin-top:10px;padding-top:10px;border-top:1px dashed #C8D8C8;font-size:12px;color:#2D6A4F;font-weight:700;">✨ FeriAI con IA dice:</div><div style="font-size:13px;color:#2D6A4F;margin-top:4px;">${iaResp}</div>`;
-    }
-  }catch{}
 }
 
 // ── REGISTRO ──────────────────────────────────────────────
@@ -1310,22 +1272,36 @@ function genBasicas(){
 }
 
 async function genIA(){
-  if(!apiKey){toast('Agrega tu API key en Más → Configuración'); go('s-plan');return;}
   scheduleSync('modo_feria_ia');
   const btn=document.getElementById('btn-ia');
   btn.textContent='⏳ Analizando...'; btn.disabled=true;
   const tipo=getChip('tipo-feria'),energia=getChip('energia');
   const st=calcStats();
-  const resumen=productos.map(p=>{const s=st[p.id]||{};return `- ${p.nombre}: precio ${clp(p.precio)}${p.costo?', costo '+clp(p.costo):''}, ${s.vendidas||0} vendidas, sobró ${s.sobro||0} en total`;}).join('\n');
-  const prompt=`Eres el asistente de FeriAPP para microemprendedoras en Chile. Habla en español chileno cercano, sin tecnicismos.\n\nVa a una ${tipo||'feria'} con ${energia.toLowerCase().includes('poco')?'poco tiempo':'tiempo normal'}.\n\nProductos:\n${resumen||'Sin datos aún'}\n\nDa 4 recomendaciones en JSON puro sin backticks:\n{"recs":[{"emoji":"...","texto":"..."},{"emoji":"...","texto":"..."},{"emoji":"...","texto":"..."},{"emoji":"...","texto":"..."}]}\n\nUsa nombres reales de productos. Tono: socia que conoce su negocio.`;
+  const payload={
+    tipo,
+    energia,
+    productos:productos.map(p=>{
+      const s=st[p.id]||{};
+      return {
+        nombre:p.nombre,
+        precio:p.precio,
+        costo:p.costo,
+        sinCosto:!!p.sinCosto,
+        vendidas:s.vendidas||0,
+        sobro:s.sobro||0,
+        vecesSobro:s.vecesSobro||0
+      };
+    })
+  };
   try{
-    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:500,messages:[{role:'user',content:prompt}]})});
+    const res=await fetch('/api/feriai',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
     const data=await res.json();
-    if(data.error)throw new Error();
-    const text=data.content?.map(b=>b.text||'').join('').replace(/```json|```/g,'').trim();
-    const parsed=JSON.parse(text);
-    mostrarRecs(parsed.recs.map(r=>({txt:`${r.emoji} ${r.texto}`,tipo:'ia'})),'✨ Tu asistente FeriAPP recomienda',true);
-  }catch{toast('Error con IA. Verifica tu API key.');genBasicas();}
+    if(!res.ok||!data.recs?.length)throw new Error(data.message||'IA no disponible');
+    mostrarRecs(data.recs.map(r=>({txt:`${r.emoji||'✨'} ${r.texto}`,tipo:'ia'})),'✨ Tu asistente FeriAPP recomienda',true);
+  }catch{
+    toast('IA Plus aún no está activa. Te muestro recomendaciones básicas.');
+    genBasicas();
+  }
   btn.textContent='✨ Analizar con IA — FeriAPP Plus'; btn.disabled=false;
 }
 
@@ -1364,14 +1340,6 @@ function guardarPerfil(){
   cerrarPerfil();
   initInicio();
   toast('Perfil guardado ✓');
-}
-
-// ── API KEY ───────────────────────────────────────────────
-function guardarKey(){
-  const v=document.getElementById('api-key-inp').value.trim();
-  if(v&&!v.startsWith('sk-ant-')){toast('La key debe empezar con sk-ant-');return;}
-  apiKey=v; LS.set('apikey',v);
-  toast(v?'API key guardada ✓':'API key eliminada');
 }
 
 // ── SERVICE WORKER ────────────────────────────────────────

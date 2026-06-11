@@ -74,9 +74,20 @@ https://TU-DOMINIO.vercel.app/admin.html
 
 ## Configurar IA
 
-1. Abre la app → Plan → API Key
-2. Ingresa tu key de console.anthropic.com
-3. Se guarda solo en tu dispositivo
+La usuaria no debe pegar llaves técnicas en FeriAPP.
+
+La IA funciona desde la función privada `api/feriai.js`:
+
+1. Crea una API key en Anthropic Console.
+2. Agrégala en Vercel como variable privada:
+
+```bash
+ANTHROPIC_API_KEY=tu_api_key_privada
+```
+
+3. Redeploy en Vercel.
+
+Si `ANTHROPIC_API_KEY` no existe, FeriAPP cae automáticamente a recomendaciones básicas por reglas.
 
 ## Desarrollo local
 
@@ -92,15 +103,15 @@ python3 -m http.server 3000
 
 - HTML + CSS + JS vanilla (sin frameworks)
 - localStorage para persistencia
-- Anthropic API (claude-sonnet-4) para IA
+- Anthropic API vía serverless function para IA
 - PWA con Service Worker
 
 ## Modelo de negocio
 
 | Plan | Precio | Límites |
 |------|--------|---------|
-| FeriAPP Libre | Gratis | 8 productos, 30 días historial, 3 recs/mes |
-| FeriAPP Plus | $4.990 CLP/mes | Todo ilimitado + IA |
+| FeriAPP Libre | Gratis | 8 productos, 30 días historial, reglas inteligentes |
+| FeriAPP Plus | $4.990 CLP/mes | Productos ilimitados, IA, alertas y resúmenes |
 | FeriAPP Pro | Próximamente | Foto boleta, predicción demanda |
 
 ## Para editar en Cursor
