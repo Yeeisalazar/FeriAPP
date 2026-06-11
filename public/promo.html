@@ -1,0 +1,684 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#6B4E2E" />
+    <meta
+      name="description"
+      content="FeriAPP ayuda a emprendedoras y feriantes a anotar ventas, registrar sobrantes y decidir que preparar sin Excel."
+    />
+    <link rel="icon" href="/icons/favicon-32x32.png" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Lora:wght@600;700&family=Nunito:wght@400;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <title>FeriAPP | Anota como siempre. Decide mejor que nunca.</title>
+    <style>
+      :root {
+        --ink: #3d2d1a;
+        --brown: #6b4e2e;
+        --brown-soft: #9b7552;
+        --cream: #faf7f3;
+        --paper: #fffaf2;
+        --line: #ede6dc;
+        --muted: #8a7a6a;
+        --gold: #e8a838;
+        --green: #2d6a4f;
+        --rose: #d96c8d;
+        --blue: #4e8ea2;
+        --shadow: 0 22px 60px rgba(61, 45, 26, 0.14);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        background: var(--cream);
+        color: var(--ink);
+        font-family: "Nunito", system-ui, sans-serif;
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      .nav {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 10;
+        display: flex;
+        justify-content: center;
+        padding: 14px;
+      }
+
+      .nav-inner {
+        width: min(1080px, 100%);
+        min-height: 58px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        border: 1px solid rgba(255, 250, 242, 0.62);
+        border-radius: 18px;
+        background: rgba(255, 250, 242, 0.9);
+        box-shadow: 0 12px 36px rgba(61, 45, 26, 0.12);
+        backdrop-filter: blur(16px);
+        padding: 10px 12px 10px 16px;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 900;
+        color: var(--brown);
+      }
+
+      .brand img {
+        width: 34px;
+        height: 34px;
+        border-radius: 9px;
+      }
+
+      .nav-links {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .nav-links a {
+        border-radius: 999px;
+        padding: 10px 12px;
+        color: var(--muted);
+        font-size: 0.9rem;
+        font-weight: 800;
+      }
+
+      .nav-cta {
+        background: var(--brown);
+        color: white !important;
+      }
+
+      .hero {
+        min-height: 96vh;
+        display: grid;
+        place-items: center;
+        overflow: hidden;
+        position: relative;
+        padding: 110px 18px 34px;
+        background: #d8c8b4;
+      }
+
+      .hero-scene {
+        position: absolute;
+        inset: 0;
+        overflow: hidden;
+      }
+
+      .table {
+        position: absolute;
+        inset: auto -8% 0;
+        height: 54%;
+        background:
+          linear-gradient(90deg, rgba(107, 78, 46, 0.1) 1px, transparent 1px) 0 0 / 58px 100%,
+          linear-gradient(135deg, #f4d59d, #b7814d 42%, #805331);
+        transform: skewY(-3deg);
+        transform-origin: bottom;
+      }
+
+      .awning {
+        position: absolute;
+        top: 78px;
+        left: 50%;
+        width: min(860px, 96vw);
+        height: 90px;
+        transform: translateX(-50%);
+        border-radius: 0 0 28px 28px;
+        background: repeating-linear-gradient(90deg, #fffaf2 0 64px, #d96c8d 64px 128px, #e8a838 128px 192px);
+        box-shadow: 0 20px 44px rgba(61, 45, 26, 0.18);
+        opacity: 0.68;
+      }
+
+      .product {
+        position: absolute;
+        width: clamp(76px, 13vw, 132px);
+        aspect-ratio: 1;
+        display: grid;
+        place-items: center;
+        border-radius: 24px;
+        background: rgba(255, 250, 242, 0.84);
+        box-shadow: 0 14px 32px rgba(61, 45, 26, 0.12);
+        font-size: clamp(32px, 6vw, 60px);
+      }
+
+      .product:nth-child(3) {
+        left: 6%;
+        bottom: 18%;
+        transform: rotate(-9deg);
+      }
+
+      .product:nth-child(4) {
+        left: 19%;
+        bottom: 8%;
+        transform: rotate(7deg);
+      }
+
+      .product:nth-child(5) {
+        right: 20%;
+        bottom: 11%;
+        transform: rotate(-5deg);
+      }
+
+      .product:nth-child(6) {
+        right: 7%;
+        bottom: 22%;
+        transform: rotate(8deg);
+      }
+
+      .hero-content {
+        position: relative;
+        z-index: 1;
+        width: min(1080px, 100%);
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(300px, 410px);
+        align-items: center;
+        gap: clamp(24px, 5vw, 72px);
+      }
+
+      .hero h1 {
+        max-width: 640px;
+        margin: 0;
+        color: #fffaf2;
+        font-family: "Lora", serif;
+        font-size: clamp(3rem, 7.5vw, 6.8rem);
+        line-height: 0.96;
+        text-shadow: 0 4px 24px rgba(61, 45, 26, 0.32);
+      }
+
+      .hero-copy {
+        max-width: 560px;
+        margin: 18px 0 0;
+        color: rgba(255, 250, 242, 0.92);
+        font-size: clamp(1.02rem, 2vw, 1.28rem);
+        line-height: 1.58;
+        font-weight: 700;
+        text-shadow: 0 2px 14px rgba(61, 45, 26, 0.25);
+      }
+
+      .hero-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 26px;
+      }
+
+      .btn {
+        display: inline-flex;
+        min-height: 48px;
+        align-items: center;
+        justify-content: center;
+        border-radius: 14px;
+        padding: 13px 18px;
+        font-weight: 900;
+      }
+
+      .btn.primary {
+        background: var(--gold);
+        color: white;
+        box-shadow: 0 14px 30px rgba(111, 72, 26, 0.28);
+      }
+
+      .btn.secondary {
+        border: 2px solid rgba(255, 250, 242, 0.78);
+        color: white;
+      }
+
+      .phone {
+        justify-self: end;
+        width: min(100%, 380px);
+        border: 12px solid #2c241c;
+        border-radius: 38px;
+        background: var(--cream);
+        box-shadow: 0 34px 80px rgba(61, 45, 26, 0.36);
+        overflow: hidden;
+      }
+
+      .phone-top {
+        background: var(--brown);
+        color: var(--cream);
+        padding: 24px 20px 20px;
+      }
+
+      .phone-top small {
+        display: block;
+        color: rgba(255, 250, 242, 0.66);
+        font-weight: 900;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .phone-top strong {
+        display: block;
+        margin-top: 8px;
+        font-family: "Lora", serif;
+        font-size: 1.55rem;
+      }
+
+      .phone-body {
+        padding: 16px;
+      }
+
+      .quick-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+
+      .quick-card,
+      .note {
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        background: white;
+        padding: 14px;
+      }
+
+      .quick-card span {
+        display: block;
+        font-size: 1.75rem;
+      }
+
+      .quick-card strong,
+      .note strong {
+        display: block;
+        margin-top: 5px;
+      }
+
+      .quick-card small,
+      .note small {
+        display: block;
+        color: var(--muted);
+        margin-top: 3px;
+        line-height: 1.35;
+      }
+
+      .note {
+        margin-top: 12px;
+        background: #fff7df;
+        border-color: #f1d794;
+      }
+
+      section {
+        padding: 72px 18px;
+      }
+
+      .wrap {
+        width: min(1080px, 100%);
+        margin: 0 auto;
+      }
+
+      .eyebrow {
+        color: var(--gold);
+        font-weight: 900;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        font-size: 0.76rem;
+      }
+
+      h2 {
+        margin: 8px 0 12px;
+        color: var(--ink);
+        font-family: "Lora", serif;
+        font-size: clamp(2rem, 4vw, 3.2rem);
+        line-height: 1.08;
+      }
+
+      .lead {
+        max-width: 720px;
+        color: var(--muted);
+        font-size: 1.06rem;
+        line-height: 1.7;
+      }
+
+      .steps,
+      .plans,
+      .signals {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 14px;
+        margin-top: 28px;
+      }
+
+      .panel {
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        background: white;
+        box-shadow: var(--shadow);
+        padding: 22px;
+      }
+
+      .panel .icon {
+        display: grid;
+        width: 48px;
+        height: 48px;
+        place-items: center;
+        border-radius: 14px;
+        background: #fff3cd;
+        font-size: 1.5rem;
+      }
+
+      .panel h3 {
+        margin: 16px 0 8px;
+        font-size: 1.2rem;
+      }
+
+      .panel p,
+      .panel li {
+        color: var(--muted);
+        line-height: 1.58;
+      }
+
+      .panel ul {
+        margin: 16px 0 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .panel li {
+        border-top: 1px dashed var(--line);
+        padding: 10px 0;
+      }
+
+      .plans {
+        grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+        align-items: stretch;
+      }
+
+      .price {
+        color: var(--brown);
+        font-size: 2rem;
+        font-weight: 900;
+      }
+
+      .featured {
+        border: 2px solid var(--gold);
+        background: #fffaf2;
+      }
+
+      .badge {
+        display: inline-flex;
+        border-radius: 999px;
+        background: var(--gold);
+        color: white;
+        padding: 5px 10px;
+        font-size: 0.76rem;
+        font-weight: 900;
+      }
+
+      .pilot {
+        background: var(--brown);
+        color: white;
+      }
+
+      .pilot h2,
+      .pilot .eyebrow,
+      .pilot .lead {
+        color: white;
+      }
+
+      .signals {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .signal {
+        border-radius: 16px;
+        background: rgba(255, 250, 242, 0.1);
+        padding: 18px;
+      }
+
+      .signal strong {
+        display: block;
+        font-size: 1.55rem;
+      }
+
+      .signal span {
+        display: block;
+        margin-top: 6px;
+        color: rgba(255, 250, 242, 0.78);
+        line-height: 1.4;
+      }
+
+      footer {
+        padding: 26px 18px 44px;
+        color: var(--muted);
+      }
+
+      .footer-inner {
+        width: min(1080px, 100%);
+        margin: 0 auto;
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        border-top: 1px solid var(--line);
+        padding-top: 22px;
+      }
+
+      @media (max-width: 820px) {
+        .nav-links a:not(.nav-cta) {
+          display: none;
+        }
+
+        .hero {
+          padding-top: 100px;
+        }
+
+        .hero-content {
+          grid-template-columns: 1fr;
+        }
+
+        .phone {
+          justify-self: center;
+          width: min(100%, 340px);
+        }
+
+        .steps,
+        .plans,
+        .signals {
+          grid-template-columns: 1fr;
+        }
+
+        .footer-inner {
+          display: grid;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="nav" aria-label="Navegacion principal">
+      <div class="nav-inner">
+        <a class="brand" href="/promo">
+          <img src="/icons/icon-72x72.png" alt="" />
+          <span>FeriAPP</span>
+        </a>
+        <div class="nav-links">
+          <a href="#como-funciona">Como funciona</a>
+          <a href="#planes">Planes</a>
+          <a href="#piloto">Piloto</a>
+          <a class="nav-cta" href="/">Abrir app</a>
+        </div>
+      </div>
+    </nav>
+
+    <header class="hero">
+      <div class="hero-scene" aria-hidden="true">
+        <div class="awning"></div>
+        <div class="table"></div>
+        <div class="product">🍪</div>
+        <div class="product">🧶</div>
+        <div class="product">🍯</div>
+        <div class="product">👜</div>
+      </div>
+
+      <div class="hero-content">
+        <div>
+          <h1>FeriAPP</h1>
+          <p class="hero-copy">Anota como siempre. Decide mejor que nunca.</p>
+          <p class="hero-copy">
+            El cuaderno inteligente para emprendedoras que venden en ferias, pedidos, Instagram o WhatsApp.
+          </p>
+          <div class="hero-actions">
+            <a class="btn primary" href="/">Probar FeriAPP</a>
+            <a class="btn secondary" href="#planes">Ver planes</a>
+          </div>
+        </div>
+
+        <div class="phone" aria-label="Vista previa de FeriAPP">
+          <div class="phone-top">
+            <small>Hoy vendiste</small>
+            <strong>$42.500</strong>
+          </div>
+          <div class="phone-body">
+            <div class="quick-row">
+              <div class="quick-card">
+                <span>🍫</span>
+                <strong>+1 Brownie</strong>
+                <small>Un toque y queda anotado.</small>
+              </div>
+              <div class="quick-card">
+                <span>🍪</span>
+                <strong>+1 Galleta</strong>
+                <small>Sin planillas ni formulas.</small>
+              </div>
+            </div>
+            <div class="note">
+              <strong>Para la próxima feria</strong>
+              <small>Lleva más brownies y prepara menos galletas de platano.</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <section id="como-funciona">
+      <div class="wrap">
+        <div class="eyebrow">Del cuaderno a la decision</div>
+        <h2>Hecha para vender, anotar y aprender sin Excel.</h2>
+        <p class="lead">
+          FeriAPP convierte registros simples en señales claras: que se vende, que sobra, que precio conviene revisar y que preparar para la próxima venta.
+        </p>
+
+        <div class="steps">
+          <article class="panel">
+            <div class="icon">✏️</div>
+            <h3>Anota rapido</h3>
+            <p>Ventas por toque, resumen del dia o registro despues de una feria.</p>
+          </article>
+          <article class="panel">
+            <div class="icon">📒</div>
+            <h3>Mira tu cuaderno</h3>
+            <p>Los dias quedan ordenados como una libreta, con productos, cantidades y totales.</p>
+          </article>
+          <article class="panel">
+            <div class="icon">✨</div>
+            <h3>Decide mejor</h3>
+            <p>FeriAPP traduce tus datos en consejos simples sobre stock, sobrantes y precios.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="wrap">
+        <div class="eyebrow">Pensada para negocios reales</div>
+        <h2>No vende datos. Vende claridad.</h2>
+        <p class="lead">
+          La app acompaña a reposteras, artesanas, feriantes y vendedoras independientes que necesitan saber que producir, que llevar y que ajustar sin aprender herramientas complejas.
+        </p>
+      </div>
+    </section>
+
+    <section id="planes">
+      <div class="wrap">
+        <div class="eyebrow">Planes simples</div>
+        <h2>Gratis para empezar. Plus para decidir mejor.</h2>
+        <div class="plans">
+          <article class="panel">
+            <h3>FeriAPP Libre</h3>
+            <div class="price">Gratis</div>
+            <ul>
+              <li>Ventas ilimitadas</li>
+              <li>Productos ilimitados</li>
+              <li>Cuaderno últimos 30 dias</li>
+              <li>Modo Feria básico</li>
+              <li>Reglas inteligentes</li>
+            </ul>
+          </article>
+
+          <article class="panel featured">
+            <span class="badge">Recomendado para crecer</span>
+            <h3>FeriAPP Plus</h3>
+            <div class="price">$4.990/mes</div>
+            <ul>
+              <li>FeriAI listo para usar</li>
+              <li>Recomendaciones de stock y producción</li>
+              <li>Alertas si suben costos o ganas poco</li>
+              <li>Resumen semanal con próximos pasos</li>
+              <li>60 dias gratis para testers del piloto</li>
+            </ul>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="pilot" id="piloto">
+      <div class="wrap">
+        <div class="eyebrow">Piloto FeriAPP</div>
+        <h2>Buscamos emprendedoras que quieran probarlo en serio.</h2>
+        <p class="lead">
+          Durante el piloto activaremos FeriAPP Plus gratis por 60 dias a testers seleccionadas. La idea es aprender si la app ayuda realmente a preparar mejor, perder menos producto y entender mejor las ventas.
+        </p>
+        <div class="signals">
+          <div class="signal">
+            <strong>60 dias</strong>
+            <span>Plus gratis para probar sin riesgo.</span>
+          </div>
+          <div class="signal">
+            <strong>5 min</strong>
+            <span>Tiempo esperado para cargar los primeros productos.</span>
+          </div>
+          <div class="signal">
+            <strong>10 seg</strong>
+            <span>Objetivo para registrar una venta rápida.</span>
+          </div>
+          <div class="signal">
+            <strong>1 feria</strong>
+            <span>Ya entrega señales útiles de venta y sobrantes.</span>
+          </div>
+        </div>
+        <div class="hero-actions">
+          <a class="btn primary" href="/">Abrir FeriAPP</a>
+          <a class="btn secondary" href="#planes">Comparar planes</a>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <div class="footer-inner">
+        <strong>FeriAPP</strong>
+        <span>No necesitas saber de números. Solo necesitas saber qué hacer.</span>
+      </div>
+    </footer>
+  </body>
+</html>

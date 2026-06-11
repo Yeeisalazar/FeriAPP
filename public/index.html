@@ -482,7 +482,7 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
     <div class="sec-title" style="padding:0;">Mis productos</div>
     <button onclick="toggleForm()" style="background:#6B4E2E;color:#fff;border:none;border-radius:12px;padding:9px 16px;font-weight:700;font-size:13px;cursor:pointer;font-family:'Nunito',sans-serif;">+ Agregar</button>
   </div>
-  <div class="sec-sub">Hasta 8 productos en plan gratuito</div>
+  <div class="sec-sub">Agrega los productos que vendes y deja que FeriAPP aprenda de tus registros</div>
   <div id="form-prod" style="display:none;background:#fff;border-radius:18px;padding:20px;margin:0 16px 14px;border:2px solid #6B4E2E;">
     <div style="font-family:'Lora',serif;font-size:17px;color:#3D2D1A;font-weight:700;margin-bottom:16px;">Nuevo producto</div>
     <span class="lbl-s">Ícono</span>
@@ -572,7 +572,7 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
       <span style="font-size:30px;">📒</span>
     </div>
     <div class="plan-feat">Registrar ventas ilimitadas</div>
-    <div class="plan-feat">Hasta 8 productos activos</div>
+    <div class="plan-feat">Productos ilimitados</div>
     <div class="plan-feat">Vista cuaderno — últimos 30 días</div>
     <div class="plan-feat">Sobrantes y Modo Feria básico</div>
     <div class="plan-feat">FeriAI básico con reglas inteligentes</div>
@@ -586,7 +586,7 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
       <span style="font-size:30px;">🚀</span>
     </div>
     <div class="plan-feat" style="border-color:#F5DEB3;">Todo lo de FeriAPP Libre</div>
-    <div class="plan-feat" style="font-weight:700;border-color:#F5DEB3;">✨ Productos ilimitados</div>
+    <div class="plan-feat" style="font-weight:700;border-color:#F5DEB3;">✨ Recomendaciones de stock y producción</div>
     <div class="plan-feat" style="font-weight:700;border-color:#F5DEB3;">✨ FeriAI listo para usar, sin configurar claves</div>
     <div class="plan-feat" style="font-weight:700;border-color:#F5DEB3;">✨ Modo Feria con cantidades sugeridas</div>
     <div class="plan-feat" style="font-weight:700;border-color:#F5DEB3;">✨ Alertas si suben costos o ganas poco</div>
@@ -1228,7 +1228,6 @@ function agregarProd(){
   const nm=document.getElementById('np-nm').value.trim();
   const pr=parseInt(document.getElementById('np-pr').value);
   if(!nm||!pr){toast('Nombre y precio son necesarios');return;}
-  if(!hasPlus()&&productos.length>=8){toast('Límite de 8 productos en FeriAPP Libre');return;}
   const sc=document.getElementById('np-sc').checked;
   const co=sc?null:(parseInt(document.getElementById('np-co').value)||null);
   const idx=productos.length%8;

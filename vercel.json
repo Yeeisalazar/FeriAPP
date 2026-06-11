@@ -1,6 +1,7 @@
 {
   "rewrites": [
     { "source": "/admin", "destination": "/admin.html" },
+    { "source": "/promo", "destination": "/promo.html" },
     { "source": "/(.*)", "destination": "/index.html" }
   ],
   "headers": [

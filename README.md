@@ -122,8 +122,8 @@ python3 -m http.server 3000
 
 | Plan | Precio | Límites |
 |------|--------|---------|
-| FeriAPP Libre | Gratis | 8 productos, 30 días historial, reglas inteligentes |
-| FeriAPP Plus | $4.990 CLP/mes | Productos ilimitados, IA, alertas y resúmenes |
+| FeriAPP Libre | Gratis | Productos ilimitados, 30 días historial, reglas inteligentes |
+| FeriAPP Plus | $4.990 CLP/mes | IA, alertas, stock sugerido y resúmenes |
 | FeriAPP Pro | Próximamente | Foto boleta, predicción demanda |
 
 ## Para editar en Cursor
