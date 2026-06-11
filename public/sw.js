@@ -1,5 +1,5 @@
-const CACHE = 'feriapp-v1';
-const ASSETS = ['/', '/index.html', '/manifest.json'];
+const CACHE = 'feriapp-v8';
+const ASSETS = ['/manifest.json'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)));
@@ -14,9 +14,23 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
-  // Llamadas a la API de Anthropic siempre van a la red
-  if (e.request.url.includes('anthropic.com')) return;
+  if (e.request.method !== 'GET') return;
+
+  const url = new URL(e.request.url);
+  if (url.pathname.startsWith('/api/')) return;
+
+  if (e.request.mode === 'navigate') {
+    e.respondWith(fetch(e.request).catch(() => caches.match('/index.html')));
+    return;
+  }
+
   e.respondWith(
-    caches.match(e.request).then(cached => cached || fetch(e.request).catch(() => caches.match('/index.html')))
+    caches.match(e.request).then(cached =>
+      cached || fetch(e.request).then(response => {
+        const copy = response.clone();
+        caches.open(CACHE).then(cache => cache.put(e.request, copy));
+        return response;
+      })
+    )
   );
 });
