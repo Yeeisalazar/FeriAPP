@@ -118,6 +118,14 @@ python3 -m http.server 3000
 - Anthropic API vía serverless function para IA
 - PWA con Service Worker
 
+## Guia para usuarias piloto
+
+Las instrucciones para instalar FeriAPP en Android/iPhone y la pauta de prueba piloto estan en:
+
+```text
+docs/guia-instalacion-y-piloto.md
+```
+
 ## Modelo de negocio
 
 | Plan | Precio | Límites |
