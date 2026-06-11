@@ -213,7 +213,7 @@
         auth: {
           autoRefreshToken: true,
           detectSessionInUrl: true,
-          flowType: "pkce",
+          flowType: "implicit",
           persistSession: true,
         },
       });
@@ -337,14 +337,8 @@
         const code = url.searchParams.get("code");
 
         if (code) {
-          const { error } = await client.auth.exchangeCodeForSession(code);
-
-          if (error) {
-            statusBox.innerHTML = `<div class="notice">No pudimos completar el ingreso con Google: ${escapeHtml(error.message)}</div>`;
-            return;
-          }
-
           history.replaceState(null, document.title, `${location.origin}/admin.html`);
+          statusBox.innerHTML = '<div class="notice">Se limpió un intento anterior de ingreso. Presiona "Entrar con Google" una vez más.</div>';
           return;
         }
 
