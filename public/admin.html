@@ -202,7 +202,11 @@
       const usersBox = document.querySelector("#users");
       const eventsBox = document.querySelector("#events");
 
-      const config = await fetch("/api/config").then((response) => response.json());
+      const rawConfig = await fetch("/api/config").then((response) => response.json());
+      const config = {
+        supabaseUrl: cleanSupabaseUrl(rawConfig.supabaseUrl),
+        supabaseAnonKey: cleanKey(rawConfig.supabaseAnonKey),
+      };
 
       if (!config.supabaseUrl || !config.supabaseAnonKey) {
         statusBox.innerHTML = '<div class="notice">Faltan variables de entorno SUPABASE_URL y SUPABASE_ANON_KEY en Vercel.</div>';
@@ -330,6 +334,21 @@
           .replaceAll(">", "&gt;")
           .replaceAll('"', "&quot;")
           .replaceAll("'", "&#039;");
+      }
+
+      function cleanKey(value) {
+        return String(value ?? "").replace(/\s/g, "");
+      }
+
+      function cleanSupabaseUrl(value) {
+        const cleaned = String(value ?? "").trim().replace(/\/+$/, "");
+        if (!cleaned) return "";
+
+        try {
+          return new URL(cleaned).origin;
+        } catch {
+          return cleaned;
+        }
       }
 
       async function hydrateSessionFromRedirect(client) {
