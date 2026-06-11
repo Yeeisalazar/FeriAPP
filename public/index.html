@@ -191,9 +191,9 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
 <!-- ══ ONBOARDING ══════════════════════════════════════════ -->
 <div class="screen active" id="s-onb">
 <div class="onb">
-  <div class="onb-step">FeriAPP · Beta piloto</div>
+  <div class="onb-step">FeriAPP · Cuaderno inteligente</div>
   <h1>Anota como siempre.<br/>Decide mejor.</h1>
-  <p>Para feriantes, reposteras y artesanas que quieren saber qué vender, cuánto llevar y cuándo ajustar precios — sin Excel.</p>
+  <p>Crea tu cuaderno, agrega tus productos y anota ventas en segundos. FeriAPP te ayuda a decidir qué preparar, qué llevar y qué precio mirar.</p>
 
   <!-- Nombre emprendimiento -->
   <div style="background:#fff;border-radius:18px;padding:18px;border:1px solid #EDE6DC;margin-bottom:16px;">
@@ -220,8 +220,8 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
       <div class="chip" onclick="sc(this,'canal-onb')">📦 Pedidos</div>
     </div>
   </div>
-  <button class="btn-pro" onclick="finOnb()">Abrir mi cuaderno →</button>
-  <p style="text-align:center;font-size:11px;color:#C5B8A8;margin-top:14px;">Gratis para empezar · Sin tarjeta de crédito</p>
+  <button class="btn-pro" onclick="finOnb()">Crear mi cuaderno →</button>
+  <p style="text-align:center;font-size:11px;color:#C5B8A8;margin-top:14px;">Primero agregaremos tus productos · Sin tarjeta de crédito</p>
 </div>
 </div>
 
@@ -243,7 +243,13 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
     </div>
   </div>
   <div class="spacer"></div>
-  <div style="padding:0 16px;margin-bottom:12px;">
+  <div id="first-product-cta" style="padding:0 16px;margin-bottom:12px;display:none;">
+    <button class="btn-main" onclick="irPrimerProducto()">
+      <div><div>🏷️ Agrega tu primer producto</div><div style="font-size:11px;font-weight:500;opacity:.82;margin-top:2px;">Brownies, galletas, accesorios o lo que vendes siempre</div></div>
+      <span style="font-size:20px;">→</span>
+    </button>
+  </div>
+  <div id="feria-cta-wrap" style="padding:0 16px;margin-bottom:12px;">
     <button class="btn-main" onclick="go('s-feria')">
       <div><div>🛍️ Voy a una feria</div><div style="font-size:11px;font-weight:500;opacity:.82;margin-top:2px;">Recibe recomendaciones antes de salir</div></div>
       <span style="font-size:20px;">→</span>
@@ -909,7 +915,20 @@ function finOnb(){
   perfil.canal  = document.querySelector('#canal-onb-chips .chip.on')?.textContent?.replace(/^\S+\s/,'')||'Feria';
   LS.set('perfil',perfil);
   scheduleSync('onboarding_completado',{tipo:perfil.tipo,canal:perfil.canal});
-  go('s-inicio');
+  irPrimerProducto();
+  toast('Agrega tus productos más vendidos');
+}
+
+function abrirFormProducto(){
+  formVis=true;
+  const form=document.getElementById('form-prod');
+  if(form) form.style.display='block';
+  setTimeout(()=>document.getElementById('np-nm')?.focus(),60);
+}
+
+function irPrimerProducto(){
+  go('s-prods');
+  setTimeout(abrirFormProducto,0);
 }
 
 // ── STATS ─────────────────────────────────────────────────
@@ -973,6 +992,12 @@ function initInicio(){
   document.getElementById('total-v').textContent=clp(tall);
   document.getElementById('n-prod').textContent=productos.length;
 
+  const hasProducts=productos.length>0;
+  const firstProductCta=document.getElementById('first-product-cta');
+  const feriaCtaWrap=document.getElementById('feria-cta-wrap');
+  if(firstProductCta) firstProductCta.style.display=hasProducts?'none':'block';
+  if(feriaCtaWrap) feriaCtaWrap.style.display=hasProducts?'block':'none';
+
   const st=calcStats();
   const top=Object.entries(st).sort((a,b)=>b[1].vendidas-a[1].vendidas)[0];
   const ec=document.getElementById('estrella-card');
@@ -985,7 +1010,10 @@ function initInicio(){
   } else { ec.style.display='none'; }
 
   const r=genRecs();
-  document.getElementById('rec-top').textContent=r[0]?.txt||'Registra tus primeras ventas y aquí aparecerán recomendaciones personalizadas.';
+  let recTxt=r[0]?.txt||'Registra tus primeras ventas y aquí aparecerán recomendaciones personalizadas.';
+  if(!hasProducts) recTxt='Agrega tus productos más vendidos para que FeriAPP pueda empezar a ayudarte.';
+  else if(!ventas.length) recTxt='Anota tus primeras ventas y FeriAPP empezará a decirte qué se mueve más.';
+  document.getElementById('rec-top').textContent=recTxt;
 }
 
 // ── HUB ──────────────────────────────────────────────────
