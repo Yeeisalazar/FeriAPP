@@ -91,7 +91,7 @@
 
       .metrics {
         display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
         gap: 12px;
         margin-bottom: 16px;
       }
@@ -115,7 +115,7 @@
 
       .grid {
         display: grid;
-        grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
+        grid-template-columns: minmax(0, 1fr) minmax(320px, 0.9fr);
         gap: 16px;
       }
 
@@ -133,7 +133,43 @@
       }
 
       .user-card small {
+        display: block;
+        margin-top: 4px;
         color: var(--muted);
+      }
+
+      .tag-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 10px;
+      }
+
+      .pill {
+        border-radius: 999px;
+        background: #f2f5f1;
+        color: var(--ink);
+        padding: 5px 8px;
+        font-size: 0.78rem;
+        font-weight: 800;
+      }
+
+      .pill.warn {
+        background: #fff3f0;
+        color: #a7442b;
+      }
+
+      .pill.good {
+        background: #eaf7f1;
+        color: var(--green-dark);
+      }
+
+      .signal {
+        border-left: 4px solid var(--green);
+      }
+
+      .signal.warn {
+        border-left-color: var(--coral);
       }
 
       .hidden {
@@ -186,6 +222,16 @@
           </section>
 
           <section class="panel">
+            <h2>Señales para mirar</h2>
+            <div class="list" id="signals"></div>
+          </section>
+
+          <section class="panel">
+            <h2>Productos más movidos</h2>
+            <div class="list" id="top-products"></div>
+          </section>
+
+          <section class="panel">
             <h2>Actividad reciente</h2>
             <div class="list" id="events"></div>
           </section>
@@ -200,6 +246,8 @@
       const dashboard = document.querySelector("#dashboard");
       const metricsBox = document.querySelector("#metrics");
       const usersBox = document.querySelector("#users");
+      const signalsBox = document.querySelector("#signals");
+      const topProductsBox = document.querySelector("#top-products");
       const eventsBox = document.querySelector("#events");
 
       const rawConfig = await fetch("/api/config").then((response) => response.json());
@@ -265,10 +313,10 @@
 
         const [profiles, products, sales, leftovers, events] = await Promise.all([
           client.from("perfiles").select("*").order("created_at", { ascending: false }),
-          client.from("productos").select("id,user_id,activo"),
-          client.from("ventas").select("id,user_id,fecha,canal,items,created_at").order("created_at", { ascending: false }).limit(12),
-          client.from("sobrantes").select("id,user_id,fecha,items,created_at"),
-          client.from("usage_events").select("*").order("created_at", { ascending: false }).limit(12),
+          client.from("productos").select("id,user_id,nombre,precio,costo,sin_costo,activo,created_at").order("created_at", { ascending: false }).limit(500),
+          client.from("ventas").select("id,user_id,fecha,canal,items,created_at").order("created_at", { ascending: false }).limit(500),
+          client.from("sobrantes").select("id,user_id,fecha,items,created_at").order("created_at", { ascending: false }).limit(500),
+          client.from("usage_events").select("id,user_id,event_name,metadata,created_at").order("created_at", { ascending: false }).limit(40),
         ]);
 
         const errors = [profiles, products, sales, leftovers, events].filter((result) => result.error);
@@ -280,40 +328,285 @@
         statusBox.classList.add("hidden");
         dashboard.classList.remove("hidden");
 
+        const productById = Object.fromEntries(products.data.map((product) => [product.id, product]));
+        const salesSummary = summarizeSales(sales.data, productById);
+        const leftoverSummary = summarizeLeftovers(leftovers.data, productById);
+        const profileById = Object.fromEntries(profiles.data.map((profile) => [profile.id, profile]));
+        const activeUsers = countActiveUsers(sales.data, events.data);
+
         metricsBox.innerHTML = [
           metric("Usuarios", profiles.data.length),
+          metric("Activos 7 dias", activeUsers),
           metric("Productos", products.data.length),
           metric("Ventas", sales.data.length),
+          metric("Ingresos anotados", clp(salesSummary.totalRevenue)),
           metric("Sobrantes", leftovers.data.length),
         ].join("");
 
         const productCount = countBy(products.data, "user_id");
         const salesCount = countBy(sales.data, "user_id");
+        const leftoverCount = countBy(leftovers.data, "user_id");
         usersBox.innerHTML =
           profiles.data
             .map((profile) => {
               const title = profile.nombre_emprendimiento || "Sin nombre todavía";
+              const revenue = salesSummary.revenueByUser[profile.id] || 0;
+              const lastSeen = salesSummary.lastSaleByUser[profile.id] || lastEventByUser(events.data, profile.id);
               return `
                 <article class="user-card">
                   <strong>${escapeHtml(title)}</strong>
                   <small>${escapeHtml(profile.tipo || "Rubro pendiente")} · ${escapeHtml(profile.canal_principal || "Canal pendiente")}</small>
-                  <small>${productCount[profile.id] || 0} productos · ${salesCount[profile.id] || 0} ventas recientes · ${profile.es_premium ? "Plus" : "Libre"}</small>
+                  <small>${productCount[profile.id] || 0} productos · ${salesCount[profile.id] || 0} ventas · ${leftoverCount[profile.id] || 0} registros de sobrantes</small>
+                  <div class="tag-row">
+                    <span class="pill ${profile.es_premium ? "good" : ""}">${profile.es_premium ? "Plus" : "Libre"}</span>
+                    <span class="pill">${clp(revenue)}</span>
+                    <span class="pill">${lastSeen ? `Ultimo uso ${formatDateTime(lastSeen)}` : "Sin actividad aun"}</span>
+                  </div>
                 </article>
               `;
             })
             .join("") || "<p>No hay usuarios todavía.</p>";
 
+        const topProducts = Object.values(salesSummary.byProduct)
+          .sort((a, b) => b.units - a.units || b.revenue - a.revenue)
+          .slice(0, 6);
+
+        topProductsBox.innerHTML =
+          topProducts
+            .map((item) => {
+              const product = productById[item.id];
+              return `
+                <article class="user-card">
+                  <strong>${escapeHtml(product?.nombre || "Producto eliminado")}</strong>
+                  <small>${item.units} unidades anotadas · ${clp(item.revenue)}</small>
+                  <div class="tag-row">
+                    <span class="pill">${escapeHtml(product?.activo === false ? "Inactivo" : "Activo")}</span>
+                    ${product?.sin_costo || !product?.costo ? '<span class="pill warn">Sin costo claro</span>' : `<span class="pill good">Costo ${clp(product.costo)}</span>`}
+                  </div>
+                </article>
+              `;
+            })
+            .join("") || "<p>Aun no hay ventas para ordenar productos.</p>";
+
+        signalsBox.innerHTML = buildSignals({
+          profiles: profiles.data,
+          products: products.data,
+          sales: sales.data,
+          leftovers: leftovers.data,
+          events: events.data,
+          salesSummary,
+          leftoverSummary,
+        })
+          .map((signal) => `
+            <article class="user-card signal ${signal.kind === "warn" ? "warn" : ""}">
+              <strong>${escapeHtml(signal.title)}</strong>
+              <small>${escapeHtml(signal.text)}</small>
+            </article>
+          `)
+          .join("");
+
         eventsBox.innerHTML =
           events.data
             .map(
-              (event) => `
+              (event) => {
+                const profile = profileById[event.user_id];
+                return `
                 <article class="user-card">
-                  <strong>${escapeHtml(event.event_name)}</strong>
-                  <small>${new Date(event.created_at).toLocaleString("es-CL")}</small>
+                  <strong>${escapeHtml(eventLabel(event.event_name))}</strong>
+                  <small>${escapeHtml(profile?.nombre_emprendimiento || "Usuario sin nombre")} · ${formatDateTime(event.created_at)}</small>
+                  <small>${escapeHtml(eventSummary(event.metadata))}</small>
                 </article>
-              `,
+              `;
+              },
             )
             .join("") || "<p>Aún no hay eventos de uso.</p>";
+      }
+
+      function buildSignals({ profiles, products, sales, leftovers, events, salesSummary, leftoverSummary }) {
+        const signals = [];
+        const productsWithoutCost = products.filter((product) => product.sin_costo || !product.costo);
+        const usersWithoutProducts = profiles.filter((profile) => !products.some((product) => product.user_id === profile.id));
+        const usersWithoutSales = profiles.filter((profile) => !sales.some((sale) => sale.user_id === profile.id));
+        const topLeftover = Object.values(leftoverSummary.byProduct).sort((a, b) => b.leftover - a.leftover)[0];
+
+        if (usersWithoutProducts.length) {
+          signals.push({
+            kind: "warn",
+            title: `${usersWithoutProducts.length} usuario(s) sin productos`,
+            text: "Conviene revisar si el onboarding está claro o si falta acompañar la primera carga.",
+          });
+        }
+
+        if (usersWithoutSales.length) {
+          signals.push({
+            kind: "warn",
+            title: `${usersWithoutSales.length} usuario(s) sin ventas`,
+            text: "El primer registro de venta es clave para validar si FeriAPP se entiende rápido.",
+          });
+        }
+
+        if (productsWithoutCost.length) {
+          signals.push({
+            kind: "warn",
+            title: `${productsWithoutCost.length} producto(s) sin costo`,
+            text: "Aqui hay una oportunidad para ofrecer ayuda de calculo de costos como funcion premium.",
+          });
+        }
+
+        if (topLeftover?.leftover > 0) {
+          signals.push({
+            kind: "info",
+            title: "Sobrantes detectados",
+            text: `${topLeftover.name} acumula ${topLeftover.leftover} sobrantes. Esta es una buena señal para recomendaciones de Modo Feria.`,
+          });
+        }
+
+        if (salesSummary.totalRevenue > 0) {
+          signals.push({
+            kind: "info",
+            title: "Ya hay ventas para analizar",
+            text: `Los usuarios han anotado ${clp(salesSummary.totalRevenue)}. Con mas datos podremos mostrar productos seguros y precios a revisar.`,
+          });
+        }
+
+        if (!events.length) {
+          signals.push({
+            kind: "warn",
+            title: "Sin actividad registrada",
+            text: "Cuando los usuarios usen botones clave, aqui aparecera la ruta de uso del producto.",
+          });
+        }
+
+        if (!signals.length) {
+          signals.push({
+            kind: "info",
+            title: "Todo listo para observar",
+            text: "El panel ya puede mostrar uso, ventas, productos y señales de decision.",
+          });
+        }
+
+        return signals;
+      }
+
+      function summarizeSales(sales, productById) {
+        return sales.reduce(
+          (summary, sale) => {
+            summary.salesByUser[sale.user_id] = (summary.salesByUser[sale.user_id] || 0) + 1;
+            summary.lastSaleByUser[sale.user_id] = newerDate(summary.lastSaleByUser[sale.user_id], sale.created_at || sale.fecha);
+
+            (sale.items || []).forEach((item) => {
+              const product = productById[item.pid];
+              const units = Number(item.q || 0);
+              const revenue = units * Number(product?.precio || 0);
+
+              summary.totalUnits += units;
+              summary.totalRevenue += revenue;
+              summary.revenueByUser[sale.user_id] = (summary.revenueByUser[sale.user_id] || 0) + revenue;
+
+              if (!summary.byProduct[item.pid]) {
+                summary.byProduct[item.pid] = { id: item.pid, units: 0, revenue: 0 };
+              }
+
+              summary.byProduct[item.pid].units += units;
+              summary.byProduct[item.pid].revenue += revenue;
+            });
+
+            return summary;
+          },
+          { byProduct: {}, revenueByUser: {}, salesByUser: {}, lastSaleByUser: {}, totalRevenue: 0, totalUnits: 0 },
+        );
+      }
+
+      function summarizeLeftovers(leftovers, productById) {
+        return leftovers.reduce(
+          (summary, record) => {
+            (record.items || []).forEach((item) => {
+              const product = productById[item.pid];
+              const leftover = Number(item.sobro || 0);
+              const prepared = Number(item.lleve || 0);
+
+              if (!summary.byProduct[item.pid]) {
+                summary.byProduct[item.pid] = { id: item.pid, name: product?.nombre || "Producto eliminado", leftover: 0, prepared: 0 };
+              }
+
+              summary.byProduct[item.pid].leftover += leftover;
+              summary.byProduct[item.pid].prepared += prepared;
+            });
+
+            return summary;
+          },
+          { byProduct: {} },
+        );
+      }
+
+      function countActiveUsers(sales, events) {
+        const since = Date.now() - 7 * 24 * 60 * 60 * 1000;
+        const ids = new Set();
+
+        sales.forEach((sale) => {
+          if (new Date(sale.created_at || sale.fecha).getTime() >= since) ids.add(sale.user_id);
+        });
+
+        events.forEach((event) => {
+          if (new Date(event.created_at).getTime() >= since) ids.add(event.user_id);
+        });
+
+        return ids.size;
+      }
+
+      function lastEventByUser(events, userId) {
+        return events.find((event) => event.user_id === userId)?.created_at || null;
+      }
+
+      function newerDate(current, next) {
+        if (!current) return next;
+        if (!next) return current;
+        return new Date(next).getTime() > new Date(current).getTime() ? next : current;
+      }
+
+      function eventLabel(name) {
+        const labels = {
+          login: "Entro a FeriAPP",
+          venta_rapida_guardada: "Guardo venta rapida",
+          resumen_dia_guardado: "Guardo resumen del dia",
+          producto_creado: "Agrego producto",
+          producto_eliminado: "Elimino producto",
+          sobrantes_guardados: "Guardo sobrantes",
+          modo_feria_basico: "Uso Modo Feria",
+          modo_feria_ia: "Pidio recomendacion IA",
+        };
+
+        return labels[name] || name;
+      }
+
+      function eventSummary(metadata) {
+        if (!metadata || typeof metadata !== "object") return "Sin detalle adicional";
+        const parts = [];
+
+        if (metadata.canal) parts.push(`Canal ${metadata.canal}`);
+        if (metadata.total_unidades) parts.push(`${metadata.total_unidades} unidades`);
+        if (metadata.total_sobrantes) parts.push(`${metadata.total_sobrantes} sobrantes`);
+        if (metadata.nombre) parts.push(metadata.nombre);
+
+        return parts.join(" · ") || "Sin detalle adicional";
+      }
+
+      function clp(value) {
+        return new Intl.NumberFormat("es-CL", {
+          style: "currency",
+          currency: "CLP",
+          maximumFractionDigits: 0,
+        }).format(Number(value || 0));
+      }
+
+      function formatDateTime(value) {
+        if (!value) return "";
+        return new Intl.DateTimeFormat("es-CL", {
+          day: "2-digit",
+          month: "short",
+          hour: "2-digit",
+          minute: "2-digit",
+        }).format(new Date(value));
       }
 
       function metric(label, value) {
