@@ -591,8 +591,8 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
     <div class="plan-feat" style="font-weight:700;border-color:#F5DEB3;">✨ Modo Feria con cantidades sugeridas</div>
     <div class="plan-feat" style="font-weight:700;border-color:#F5DEB3;">✨ Alertas si suben costos o ganas poco</div>
     <div class="plan-feat" style="font-weight:700;border-color:#F5DEB3;">✨ Resumen semanal con próximos pasos</div>
-    <button onclick="toast('Próximamente disponible 🚀')" class="btn-pro" style="margin-top:18px;">Activar FeriAPP Plus</button>
-    <p style="text-align:center;font-size:11px;color:#A89882;margin-top:10px;">Sin contrato · Cancela cuando quieras</p>
+    <button id="plus-action-btn" onclick="activarPlus()" class="btn-pro" style="margin-top:18px;">Quiero FeriAPP Plus</button>
+    <p id="plus-status-note" style="text-align:center;font-size:11px;color:#A89882;margin-top:10px;">Sin contrato · Cancela cuando quieras</p>
   </div>
 
   <!-- Cuenta y respaldo -->
@@ -814,7 +814,8 @@ async function loadFromCloud(){
     perfil={
       nombre:perfilRes.data.nombre_emprendimiento||perfil.nombre||'',
       tipo:perfilRes.data.tipo||perfil.tipo||'Repostería',
-      canal:perfilRes.data.canal_principal||perfil.canal||'Feria'
+      canal:perfilRes.data.canal_principal||perfil.canal||'Feria',
+      esPremium:!!perfilRes.data.es_premium
     };
     LS.set('perfil',perfil);
   }
@@ -987,7 +988,26 @@ function initInicio(){
 function initHub(){
   document.getElementById('n-prods-hub').textContent=productos.length+' producto'+(productos.length!==1?'s':'');
   document.getElementById('hub-emp-nm').textContent=perfil.nombre||'Configura tu nombre';
+  const plusBtn=document.getElementById('plus-action-btn');
+  const plusNote=document.getElementById('plus-status-note');
+  if(plusBtn){
+    plusBtn.textContent=hasPlus()?'FeriAPP Plus activo ✓':'Quiero FeriAPP Plus';
+    plusBtn.disabled=hasPlus();
+    plusBtn.style.opacity=hasPlus()?'.82':'1';
+  }
+  if(plusNote){
+    plusNote.textContent=hasPlus()?'Tu cuenta ya tiene recomendaciones Plus activas.':'Sin contrato · Cancela cuando quieras';
+  }
   updateSyncUi();
+}
+
+function hasPlus(){
+  return !!perfil.esPremium || sbIsAdmin;
+}
+
+function activarPlus(){
+  if(hasPlus()){toast('FeriAPP Plus ya está activo en esta cuenta');return;}
+  toast('Plus estará disponible para el piloto. Por ahora seguimos con el plan Libre.');
 }
 
 // ── FERIAI ────────────────────────────────────────────────
@@ -1208,7 +1228,7 @@ function agregarProd(){
   const nm=document.getElementById('np-nm').value.trim();
   const pr=parseInt(document.getElementById('np-pr').value);
   if(!nm||!pr){toast('Nombre y precio son necesarios');return;}
-  if(productos.length>=8){toast('Límite de 8 productos en plan gratuito');return;}
+  if(!hasPlus()&&productos.length>=8){toast('Límite de 8 productos en FeriAPP Libre');return;}
   const sc=document.getElementById('np-sc').checked;
   const co=sc?null:(parseInt(document.getElementById('np-co').value)||null);
   const idx=productos.length%8;
@@ -1272,6 +1292,18 @@ function genBasicas(){
 }
 
 async function genIA(){
+  if(!hasPlus()){
+    toast('FeriAI con IA es parte de FeriAPP Plus. Te muestro recomendaciones básicas.');
+    scheduleSync('plus_intento_ia');
+    genBasicas();
+    go('s-plan');
+    return;
+  }
+  if(!sbUser||!sb){
+    toast('Entra con Google para usar FeriAPP Plus');
+    go('s-plan');
+    return;
+  }
   scheduleSync('modo_feria_ia');
   const btn=document.getElementById('btn-ia');
   btn.textContent='⏳ Analizando...'; btn.disabled=true;
@@ -1294,8 +1326,17 @@ async function genIA(){
     })
   };
   try{
-    const res=await fetch('/api/feriai',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    const {data:sessionData}=await sb.auth.getSession();
+    const token=sessionData.session?.access_token;
+    if(!token)throw new Error('Sin sesión');
+    const res=await fetch('/api/feriai',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},body:JSON.stringify(payload)});
     const data=await res.json();
+    if(res.status===403){
+      toast('Tu cuenta aún no tiene FeriAPP Plus activo.');
+      go('s-plan');
+      genBasicas();
+      return;
+    }
     if(!res.ok||!data.recs?.length)throw new Error(data.message||'IA no disponible');
     mostrarRecs(data.recs.map(r=>({txt:`${r.emoji||'✨'} ${r.texto}`,tipo:'ia'})),'✨ Tu asistente FeriAPP recomienda',true);
   }catch{

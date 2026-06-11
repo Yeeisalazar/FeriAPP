@@ -89,6 +89,18 @@ ANTHROPIC_API_KEY=tu_api_key_privada
 
 Si `ANTHROPIC_API_KEY` no existe, FeriAPP cae automáticamente a recomendaciones básicas por reglas.
 
+FeriAI Plus valida la sesión del usuario con Supabase. Para habilitar IA a una cuenta durante el piloto:
+
+```sql
+update public.perfiles
+set es_premium = true
+where id in (
+  select id from auth.users where email = 'CORREO_DEL_USUARIO@gmail.com'
+);
+```
+
+Los usuarios admin también pueden usar FeriAI Plus.
+
 ## Desarrollo local
 
 Cualquier servidor estático sirve:
