@@ -9,7 +9,9 @@
 <meta name="apple-mobile-web-app-title" content="FeriAPP">
 <meta name="description" content="Tu cuaderno inteligente para ferias y emprendimientos">
 <link rel="manifest" href="/manifest.json">
-<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png">
+<link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152x152.png">
 <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -113,6 +115,10 @@ body{font-family:'Nunito',sans-serif;display:flex;justify-content:center;align-i
 .plan-feat:last-child{border-bottom:none;}
 .plan-feat::before{content:"✓  ";}
 .badge-pop{display:inline-block;background:#E8A838;color:#fff;font-size:10px;font-weight:800;padding:3px 11px;border-radius:20px;margin-bottom:9px;}
+.install-help{display:none;background:#FFF9F0;border:1px dashed #E8A838;border-radius:14px;padding:12px 13px;margin-top:10px;color:#6B4E2E;font-size:12px;line-height:1.45;}
+.install-help strong{display:block;color:#3D2D1A;margin-bottom:4px;}
+.install-steps{margin-top:6px;display:grid;gap:5px;}
+.install-steps span{display:block;}
 
 /* PROD LIST */
 .pli{display:flex;align-items:center;gap:12px;background:#fff;border-radius:14px;padding:13px 16px;border:1px solid #EDE6DC;margin:0 16px 10px;}
@@ -206,6 +212,7 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
     <div style="font-size:13px;color:#6B4E2E;font-weight:700;margin-bottom:12px;">¿Qué vendes principalmente?</div>
     <div class="chips" id="tipo-chips">
       <div class="chip on" onclick="sc(this,'tipo')">🍰 Repostería</div>
+      <div class="chip" onclick="sc(this,'tipo')">🥬 Verduras</div>
       <div class="chip" onclick="sc(this,'tipo')">🧶 Artesanía</div>
       <div class="chip" onclick="sc(this,'tipo')">👜 Accesorios</div>
       <div class="chip" onclick="sc(this,'tipo')">🌸 Otro</div>
@@ -499,6 +506,12 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
       <button class="chip" onclick="selEmoji(this,'🧁')">🧁</button>
       <button class="chip" onclick="selEmoji(this,'🥐')">🥐</button>
       <button class="chip" onclick="selEmoji(this,'🍯')">🍯</button>
+      <button class="chip" onclick="selEmoji(this,'🥬')">🥬</button>
+      <button class="chip" onclick="selEmoji(this,'🥕')">🥕</button>
+      <button class="chip" onclick="selEmoji(this,'🍅')">🍅</button>
+      <button class="chip" onclick="selEmoji(this,'🥔')">🥔</button>
+      <button class="chip" onclick="selEmoji(this,'🌽')">🌽</button>
+      <button class="chip" onclick="selEmoji(this,'🥑')">🥑</button>
       <button class="chip" onclick="selEmoji(this,'🧶')">🧶</button>
       <button class="chip" onclick="selEmoji(this,'💍')">💍</button>
       <button class="chip" onclick="selEmoji(this,'🎀')">🎀</button>
@@ -611,6 +624,15 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
     </div>
     <button id="logout-btn" onclick="logoutGoogle()" style="display:none;background:#FAF7F3;color:#6B4E2E;border:1px solid #EDE6DC;border-radius:10px;padding:10px 12px;font-weight:800;font-size:12px;cursor:pointer;font-family:'Nunito',sans-serif;width:100%;margin-top:8px;">Cerrar sesión</button>
     <button id="install-app-btn" onclick="installApp()" style="display:none;background:#FAF7F3;color:#6B4E2E;border:1px solid #EDE6DC;border-radius:10px;padding:10px 12px;font-weight:800;font-size:12px;cursor:pointer;font-family:'Nunito',sans-serif;width:100%;margin-top:8px;">Instalar FeriAPP</button>
+    <div id="ios-install-help" class="install-help">
+      <strong>Instalar en iPhone</strong>
+      <div>Abre FeriAPP desde Safari y guárdala en tu pantalla de inicio.</div>
+      <div class="install-steps">
+        <span>1. Toca Compartir.</span>
+        <span>2. Elige Agregar a pantalla de inicio.</span>
+        <span>3. Toca Agregar.</span>
+      </div>
+    </div>
     <a id="admin-link" href="/admin" style="display:none;margin-top:10px;font-size:12px;color:#6B4E2E;font-weight:800;text-decoration:none;">Abrir panel admin →</a>
   </div>
   <div style="height:10px;"></div>
@@ -636,6 +658,7 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
     <span class="lbl-s">¿Qué vendes?</span>
     <div class="chips" id="perfil-tipo-chips" style="margin-bottom:16px;">
       <div class="chip on" onclick="sc(this,'perfil-tipo')">🍰 Repostería</div>
+      <div class="chip" onclick="sc(this,'perfil-tipo')">🥬 Verduras</div>
       <div class="chip" onclick="sc(this,'perfil-tipo')">🧶 Artesanía</div>
       <div class="chip" onclick="sc(this,'perfil-tipo')">👜 Accesorios</div>
       <div class="chip" onclick="sc(this,'perfil-tipo')">🌸 Otro</div>
@@ -857,6 +880,7 @@ function updateSyncUi(customMsg){
   const logout=document.getElementById('logout-btn');
   const admin=document.getElementById('admin-link');
   const install=document.getElementById('install-app-btn');
+  const iosHelp=document.getElementById('ios-install-help');
   if(!status)return;
   if(customMsg) status.textContent=customMsg;
   else status.textContent=sbUser?`Conectada como ${sbUser.email}. Tus datos se respaldan en Supabase.`:'Trabajando solo en este dispositivo.';
@@ -864,6 +888,7 @@ function updateSyncUi(customMsg){
   if(logout) logout.style.display=sbUser?'block':'none';
   if(admin) admin.style.display=sbIsAdmin?'inline-block':'none';
   if(install) install.style.display=deferredInstallPrompt?'block':'none';
+  if(iosHelp) iosHelp.style.display=(isIosDevice()&&!isStandaloneApp())?'block':'none';
 }
 
 async function trackEvent(eventName,metadata={}){
@@ -1415,9 +1440,18 @@ function guardarPerfil(){
 }
 
 // ── INSTALACIÓN PWA ───────────────────────────────────────
+function isIosDevice(){
+  return /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform==='MacIntel' && navigator.maxTouchPoints>1);
+}
+
+function isStandaloneApp(){
+  return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone===true;
+}
+
 async function installApp(){
   if(!deferredInstallPrompt){
-    toast('Si no aparece instalar, agrégala desde el menú del navegador');
+    if(isIosDevice()) toast('En iPhone: Safari > Compartir > Agregar a pantalla de inicio');
+    else toast('Si no aparece instalar, agrégala desde el menú del navegador');
     return;
   }
 

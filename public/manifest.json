@@ -2,12 +2,33 @@
   "name": "FeriAPP — Tu Cuaderno Inteligente",
   "short_name": "FeriAPP",
   "description": "Anota tus ventas de feria y recibe recomendaciones con IA",
+  "id": "/",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
   "background_color": "#FAF7F3",
   "theme_color": "#6B4E2E",
   "orientation": "portrait",
   "lang": "es",
+  "categories": ["business", "productivity"],
+  "prefer_related_applications": false,
+  "shortcuts": [
+    {
+      "name": "Anotar venta",
+      "short_name": "Anotar",
+      "description": "Registrar ventas rapidamente",
+      "url": "/?accion=anotar",
+      "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Modo Feria",
+      "short_name": "Feria",
+      "description": "Preparar recomendaciones para una feria",
+      "url": "/?accion=feria",
+      "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192", "type": "image/png" }]
+    }
+  ],
   "icons": [
     { "src": "/icons/icon-72x72.png",   "sizes": "72x72",   "type": "image/png" },
     { "src": "/icons/icon-96x96.png",   "sizes": "96x96",   "type": "image/png" },
