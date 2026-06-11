@@ -213,14 +213,17 @@
         auth: {
           autoRefreshToken: true,
           detectSessionInUrl: true,
+          flowType: "pkce",
           persistSession: true,
         },
       });
 
+      statusBox.innerHTML = "<p>Revisando tu acceso...</p>";
       await hydrateSessionFromRedirect(client);
-      const { data } = await client.auth.getSession();
+      const session = await waitForSession(client);
 
       loginButton.addEventListener("click", async () => {
+        statusBox.innerHTML = "<p>Abriendo Google...</p>";
         await client.auth.signInWithOAuth({
           provider: "google",
           options: { redirectTo: `${location.origin}/admin.html` },
@@ -232,21 +235,27 @@
         location.reload();
       });
 
-      if (!data.session) {
+      if (!session) {
         statusBox.innerHTML = "<p>Inicia sesión con el Google que marcaste como administradora.</p>";
       } else {
-        await loadDashboard();
+        await loadDashboard(session);
       }
 
-      async function loadDashboard() {
+      async function loadDashboard(session) {
         loginButton.classList.add("hidden");
         logoutButton.classList.remove("hidden");
 
-        const { data: sessionData } = await client.auth.getSession();
-        const userId = sessionData.session?.user?.id;
+        const userId = session?.user?.id;
+        const userEmail = session?.user?.email || "este correo";
+
+        if (!userId) {
+          statusBox.innerHTML = '<div class="notice">Google respondió, pero no pudimos leer el usuario. Cierra sesión e intenta entrar otra vez.</div>';
+          return;
+        }
+
         const adminCheck = await client.from("admin_users").select("user_id").eq("user_id", userId).maybeSingle();
         if (adminCheck.error || !adminCheck.data) {
-          statusBox.innerHTML = '<div class="notice">Entraste con Google, pero este correo todavía no está marcado como administrador en Supabase.</div>';
+          statusBox.innerHTML = `<div class="notice">Entraste con Google como ${escapeHtml(userEmail)}, pero ese correo todavía no está marcado como administrador en Supabase.</div>`;
           return;
         }
 
@@ -324,6 +333,21 @@
       }
 
       async function hydrateSessionFromRedirect(client) {
+        const url = new URL(location.href);
+        const code = url.searchParams.get("code");
+
+        if (code) {
+          const { error } = await client.auth.exchangeCodeForSession(code);
+
+          if (error) {
+            statusBox.innerHTML = `<div class="notice">No pudimos completar el ingreso con Google: ${escapeHtml(error.message)}</div>`;
+            return;
+          }
+
+          history.replaceState(null, document.title, `${location.origin}/admin.html`);
+          return;
+        }
+
         const hash = new URLSearchParams(location.hash.replace(/^#/, ""));
         const accessToken = hash.get("access_token");
         const refreshToken = hash.get("refresh_token");
@@ -335,9 +359,23 @@
           refresh_token: refreshToken,
         });
 
-        if (!error) {
-          history.replaceState(null, document.title, `${location.origin}/admin.html`);
+        if (error) {
+          statusBox.innerHTML = `<div class="notice">No pudimos guardar tu sesión de Google: ${escapeHtml(error.message)}</div>`;
+          return;
         }
+
+        history.replaceState(null, document.title, `${location.origin}/admin.html`);
+      }
+
+      async function waitForSession(client) {
+        for (let attempt = 0; attempt < 8; attempt += 1) {
+          const { data, error } = await client.auth.getSession();
+          if (error) return null;
+          if (data.session) return data.session;
+          await new Promise((resolve) => setTimeout(resolve, 250));
+        }
+
+        return null;
       }
     </script>
   </body>
