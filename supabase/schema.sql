@@ -6,6 +6,8 @@ create extension if not exists pgcrypto;
 -- ── Tablas principales ──────────────────────────────────────────────────────
 create table if not exists public.perfiles (
   id uuid references auth.users(id) on delete cascade primary key,
+  nombre_usuario text,
+  email_contacto text,
   nombre_emprendimiento text,
   tipo text,
   canal_principal text,
@@ -17,6 +19,8 @@ create table if not exists public.perfiles (
 
 alter table public.perfiles add column if not exists es_admin boolean default false;
 alter table public.perfiles add column if not exists api_key_ia text;
+alter table public.perfiles add column if not exists nombre_usuario text;
+alter table public.perfiles add column if not exists email_contacto text;
 
 create table if not exists public.productos (
   id uuid default gen_random_uuid() primary key,
@@ -201,4 +205,3 @@ using (public.is_admin());
 -- update public.perfiles
 -- set es_admin = true
 -- where id in (select user_id from public.admin_users);
-

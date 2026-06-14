@@ -350,11 +350,14 @@
           profiles.data
             .map((profile) => {
               const title = profile.nombre_emprendimiento || "Sin nombre todavía";
+              const contact = profile.nombre_usuario || profile.email_contacto || "Sin contacto";
+              const email = profile.email_contacto && profile.email_contacto !== contact ? ` · ${profile.email_contacto}` : "";
               const revenue = salesSummary.revenueByUser[profile.id] || 0;
               const lastSeen = salesSummary.lastSaleByUser[profile.id] || lastEventByUser(events.data, profile.id);
               return `
                 <article class="user-card">
                   <strong>${escapeHtml(title)}</strong>
+                  <small>${escapeHtml(contact + email)}</small>
                   <small>${escapeHtml(profile.tipo || "Rubro pendiente")} · ${escapeHtml(profile.canal_principal || "Canal pendiente")}</small>
                   <small>${productCount[profile.id] || 0} productos · ${salesCount[profile.id] || 0} ventas · ${leftoverCount[profile.id] || 0} registros de sobrantes</small>
                   <div class="tag-row">

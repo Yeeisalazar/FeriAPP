@@ -184,6 +184,14 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
 .onb h1{font-family:'Lora',serif;font-size:28px;color:#3D2D1A;margin-bottom:10px;line-height:1.25;}
 .onb p{color:#A89882;font-size:14px;line-height:1.65;margin-bottom:28px;}
 .onb-step{font-size:11px;color:#E8A838;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;}
+.tour-panel{background:#fff;border:1px solid #EDE6DC;border-radius:20px;padding:20px;margin-bottom:18px;min-height:250px;display:flex;flex-direction:column;}
+.tour-kicker{font-size:11px;color:#9B7552;font-weight:800;text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px;}
+.tour-title{font-family:'Lora',serif;color:#3D2D1A;font-size:24px;font-weight:700;line-height:1.2;margin-bottom:10px;}
+.tour-text{color:#6B4E2E;font-size:14px;line-height:1.6;margin-bottom:16px;}
+.tour-example{background:#FAF7F3;border:1px dashed #E8A838;border-radius:14px;padding:13px;color:#6B4E2E;font-size:12px;line-height:1.45;margin-top:auto;}
+.tour-dots{display:flex;justify-content:center;gap:6px;margin:8px 0 18px;}
+.tour-dot{width:7px;height:7px;border-radius:99px;background:#EDE6DC;}
+.tour-dot.on{width:22px;background:#E8A838;}
 
 /* PERFIL modal */
 .modal-bg{position:absolute;inset:0;background:rgba(0,0,0,.45);z-index:200;display:flex;align-items:flex-end;justify-content:center;}
@@ -194,8 +202,28 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
 <body>
 <div id="app">
 
+<!-- ══ IDENTIFICACIÓN ══════════════════════════════════════ -->
+<div class="screen active" id="s-ident">
+<div class="onb">
+  <div class="onb-step">FeriAPP · Primer paso</div>
+  <h1>Identifiquemos tu cuaderno.</h1>
+  <p>Esto nos ayuda a saber de quién son los registros cuando revisamos el piloto y a que tu información quede mejor ordenada.</p>
+
+  <div style="background:#fff;border-radius:18px;padding:18px;border:1px solid #EDE6DC;margin-bottom:18px;">
+    <div style="font-size:13px;color:#6B4E2E;font-weight:700;margin-bottom:10px;">Tu nombre o usuario</div>
+    <input class="fi" id="ident-nombre" placeholder="Ej: Carmen, Verduras Don Luis..." maxlength="60" style="margin-bottom:12px;">
+    <div style="font-size:13px;color:#6B4E2E;font-weight:700;margin-bottom:10px;">Correo de contacto</div>
+    <input class="fi" id="ident-email" type="email" inputmode="email" placeholder="Ej: nombre@correo.com" maxlength="80">
+    <div style="font-size:11px;color:#C5B8A8;margin-top:8px;">Puedes usar nombre, correo o ambos. Para respaldo en la nube, luego entra con Google.</div>
+  </div>
+
+  <button class="btn-pro" onclick="guardarIdentidad()">Continuar</button>
+  <p style="text-align:center;font-size:11px;color:#C5B8A8;margin-top:14px;">Tus datos no se publican. Solo ayudan a identificar tu cuenta en el piloto.</p>
+</div>
+</div>
+
 <!-- ══ ONBOARDING ══════════════════════════════════════════ -->
-<div class="screen active" id="s-onb">
+<div class="screen" id="s-onb">
 <div class="onb">
   <div class="onb-step">FeriAPP · Cuaderno inteligente</div>
   <h1>Anota como siempre.<br/>Decide mejor.</h1>
@@ -229,6 +257,29 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
   </div>
   <button class="btn-pro" onclick="finOnb()">Crear mi cuaderno →</button>
   <p style="text-align:center;font-size:11px;color:#C5B8A8;margin-top:14px;">Primero agregaremos tus productos · Sin tarjeta de crédito</p>
+</div>
+</div>
+
+<!-- ══ TUTORIAL INICIAL ════════════════════════════════════ -->
+<div class="screen" id="s-tour">
+<div class="onb">
+  <div class="onb-step">Guía rápida</div>
+  <h1>Cómo usar FeriAPP.</h1>
+  <p>Antes de comenzar, revisa para qué sirve cada sección. Son pocos pasos y después podrás anotar tus productos.</p>
+
+  <div class="tour-panel">
+    <div class="tour-kicker" id="tour-kicker"></div>
+    <div class="tour-title" id="tour-title"></div>
+    <div class="tour-text" id="tour-text"></div>
+    <div class="tour-example" id="tour-example"></div>
+  </div>
+
+  <div class="tour-dots" id="tour-dots"></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+    <button class="btn-sec" id="tour-prev" onclick="tourPrev()">Atrás</button>
+    <button class="btn-pro" id="tour-next" onclick="tourNext()">Siguiente</button>
+  </div>
+  <button onclick="finishTour()" style="background:none;border:none;color:#A89882;font-size:12px;font-weight:700;margin-top:14px;cursor:pointer;font-family:'Nunito',sans-serif;">Saltar guía</button>
 </div>
 </div>
 
@@ -652,6 +703,12 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
     <div class="modal-handle"></div>
     <div style="font-family:'Lora',serif;font-size:20px;font-weight:700;color:#3D2D1A;margin-bottom:20px;">Mi emprendimiento</div>
 
+    <span class="lbl-s">Tu nombre o usuario</span>
+    <input class="fi" id="perfil-usuario" placeholder="Ej: Carmen, Verduras Don Luis" maxlength="60" style="margin-bottom:14px;">
+
+    <span class="lbl-s">Correo de contacto</span>
+    <input class="fi" id="perfil-email" type="email" inputmode="email" placeholder="Ej: nombre@correo.com" maxlength="80" style="margin-bottom:16px;">
+
     <span class="lbl-s">Nombre de tu emprendimiento</span>
     <input class="fi" id="perfil-nombre" placeholder="Ej: Dulces de Carmen" maxlength="40" style="margin-bottom:16px;">
 
@@ -692,18 +749,51 @@ const LS = {
 let productos = LS.get('prods',[]);
 let ventas    = LS.get('ventas',[]);
 let sobrantes = LS.get('sobs',[]);
-let perfil    = LS.get('perfil',{ nombre:'', tipo:'Repostería', canal:'Feria' });
+let perfil    = { nombre:'', tipo:'Repostería', canal:'Feria', usuario:'', email:'', identificado:false, tourDone:false, ...LS.get('perfil',{}) };
 let conteos   = {};
 let resumenData = {};
 let emojiSel  = '🍫';
 let formVis   = false;
 let tabActual = 'rapido';
+let tourIndex = 0;
 let sb = null;
 let sbUser = null;
 let sbIsAdmin = false;
 let sbReady = false;
 let syncTimer = null;
 let deferredInstallPrompt = null;
+const TOUR_STEPS = [
+  {
+    kicker:'Inicio',
+    title:'Tu resumen del día',
+    text:'Aquí verás cuánto vendiste, qué producto se movió más y qué recomendación conviene mirar primero.',
+    example:'Úsalo para responder rápido: ¿cómo va mi negocio hoy?'
+  },
+  {
+    kicker:'Anotar',
+    title:'Ventas en pocos segundos',
+    text:'Toca el producto vendido y FeriAPP suma una unidad. También puedes corregir si te equivocas.',
+    example:'Ideal para feria, local, pedidos, Instagram o WhatsApp.'
+  },
+  {
+    kicker:'Cuaderno',
+    title:'Tus días quedan ordenados',
+    text:'Las ventas se guardan por fecha, como una libreta digital, pero con totales claros y fáciles de revisar.',
+    example:'Sirve para mirar qué pasó ayer, esta semana o en una feria anterior.'
+  },
+  {
+    kicker:'Sobrantes',
+    title:'Lo que no se vendió también importa',
+    text:'Registrar sobrantes ayuda a saber cuándo preparaste de más y qué podrías ajustar la próxima vez.',
+    example:'Si llevaste 20 y sobraron 6, FeriAPP puede sugerir llevar menos.'
+  },
+  {
+    kicker:'Modo Feria y FeriAI',
+    title:'Consejos para decidir mejor',
+    text:'Con tus registros, FeriAPP empieza a recomendar qué llevar, qué preparar y qué precio revisar.',
+    example:'No muestra solo datos: te ayuda a decidir el próximo paso.'
+  }
+];
 
 // ── UTILS ─────────────────────────────────────────────────
 const clp = n => '$'+Math.round(n).toLocaleString('es-CL');
@@ -757,6 +847,7 @@ async function afterLogin(){
   await checkAdmin();
   trackEvent('login');
   renderAll();
+  routeInitial(false);
   updateSyncUi('Datos respaldados en la nube.');
 }
 
@@ -794,8 +885,11 @@ function scheduleSync(eventName,metadata={}){
 
 async function syncToCloud(){
   if(!sbUser||!sb)return;
+  if(!perfil.email && sbUser.email) perfil.email=sbUser.email;
   await sb.from('perfiles').upsert({
     id:sbUser.id,
+    nombre_usuario:perfil.usuario||null,
+    email_contacto:perfil.email||sbUser.email||null,
     nombre_emprendimiento:perfil.nombre||null,
     tipo:perfil.tipo||null,
     canal_principal:perfil.canal||null
@@ -843,10 +937,15 @@ async function loadFromCloud(){
   ]);
   if(perfilRes.data){
     perfil={
+      ...perfil,
+      usuario:perfilRes.data.nombre_usuario||perfil.usuario||'',
+      email:perfilRes.data.email_contacto||perfil.email||sbUser.email||'',
+      identificado:!!(perfilRes.data.nombre_usuario||perfilRes.data.email_contacto||perfil.identificado||sbUser.email),
       nombre:perfilRes.data.nombre_emprendimiento||perfil.nombre||'',
       tipo:perfilRes.data.tipo||perfil.tipo||'Repostería',
       canal:perfilRes.data.canal_principal||perfil.canal||'Feria',
-      esPremium:!!perfilRes.data.es_premium
+      esPremium:!!perfilRes.data.es_premium,
+      tourDone:!!perfil.tourDone
     };
     LS.set('perfil',perfil);
   }
@@ -919,17 +1018,77 @@ function renderAll(){
   refreshConsejos();
 }
 
+function routeInitial(force=false){
+  const active=document.querySelector('.screen.active')?.id;
+  const initialScreens=['s-ident','s-onb','s-tour'];
+  if(!force && active && !initialScreens.includes(active))return;
+  if(!perfil.identificado){go('s-ident');return;}
+  if(!perfil.nombre){go('s-onb');return;}
+  if(!perfil.tourDone){tourIndex=0;go('s-tour');return;}
+  go(productos.length?'s-inicio':'s-inicio');
+}
+
 // ── NAVEGACIÓN ────────────────────────────────────────────
 function go(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
-  const map={'s-inicio':initInicio,'s-reg':initReg,'s-cuad':renderCuad,'s-prods':renderProds,'s-sob':initSob,'s-fai':initFeriAI,'s-plan':initHub};
+  const map={'s-tour':renderTour,'s-inicio':initInicio,'s-reg':initReg,'s-cuad':renderCuad,'s-prods':renderProds,'s-sob':initSob,'s-fai':initFeriAI,'s-plan':initHub};
   if(map[id]) map[id]();
 }
 
 function sc(el,grupo){
   document.querySelectorAll('#'+grupo+'-chips .chip').forEach(c=>c.classList.remove('on'));
   el.classList.add('on');
+}
+
+// ── IDENTIFICACIÓN Y GUÍA INICIAL ────────────────────────
+function guardarIdentidad(){
+  const usuario=document.getElementById('ident-nombre').value.trim();
+  const email=document.getElementById('ident-email').value.trim().toLowerCase();
+  if(!usuario&&!email){toast('Escribe tu nombre, usuario o correo');return;}
+  if(email&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){toast('Revisa el correo, parece incompleto');return;}
+
+  perfil.usuario=usuario||perfil.usuario||'';
+  perfil.email=email||perfil.email||'';
+  perfil.identificado=true;
+  LS.set('perfil',perfil);
+  scheduleSync('identificacion_guardada',{tiene_nombre:!!usuario,tiene_email:!!email});
+
+  if(perfil.nombre){
+    if(!perfil.tourDone) go('s-tour');
+    else go(productos.length?'s-inicio':'s-prods');
+  } else {
+    go('s-onb');
+  }
+}
+
+function renderTour(){
+  const step=TOUR_STEPS[tourIndex]||TOUR_STEPS[0];
+  document.getElementById('tour-kicker').textContent=step.kicker;
+  document.getElementById('tour-title').textContent=step.title;
+  document.getElementById('tour-text').textContent=step.text;
+  document.getElementById('tour-example').textContent=step.example;
+  document.getElementById('tour-dots').innerHTML=TOUR_STEPS.map((_,i)=>`<span class="tour-dot ${i===tourIndex?'on':''}"></span>`).join('');
+  document.getElementById('tour-prev').disabled=tourIndex===0;
+  document.getElementById('tour-prev').style.opacity=tourIndex===0?'.45':'1';
+  document.getElementById('tour-next').textContent=tourIndex===TOUR_STEPS.length-1?'Empezar':'Siguiente';
+}
+
+function tourNext(){
+  if(tourIndex<TOUR_STEPS.length-1){tourIndex++;renderTour();return;}
+  finishTour();
+}
+
+function tourPrev(){
+  if(tourIndex>0){tourIndex--;renderTour();}
+}
+
+function finishTour(){
+  perfil.tourDone=true;
+  LS.set('perfil',perfil);
+  scheduleSync('tutorial_completado',{pasos:TOUR_STEPS.length});
+  irPrimerProducto();
+  toast('Ahora agrega tus productos principales');
 }
 
 // ── ONBOARDING ────────────────────────────────────────────
@@ -940,8 +1099,8 @@ function finOnb(){
   perfil.canal  = document.querySelector('#canal-onb-chips .chip.on')?.textContent?.replace(/^\S+\s/,'')||'Feria';
   LS.set('perfil',perfil);
   scheduleSync('onboarding_completado',{tipo:perfil.tipo,canal:perfil.canal});
-  irPrimerProducto();
-  toast('Agrega tus productos más vendidos');
+  tourIndex=0;
+  go('s-tour');
 }
 
 function abrirFormProducto(){
@@ -1411,6 +1570,8 @@ function mostrarRecs(r,lbl,esIA){
 
 // ── PERFIL ────────────────────────────────────────────────
 function abrirPerfil(){
+  document.getElementById('perfil-usuario').value=perfil.usuario||'';
+  document.getElementById('perfil-email').value=perfil.email||'';
   document.getElementById('perfil-nombre').value=perfil.nombre||'';
   // Seleccionar chips del perfil
   document.querySelectorAll('#perfil-tipo-chips .chip').forEach(c=>{
@@ -1429,11 +1590,16 @@ function cerrarPerfil(e){
 }
 
 function guardarPerfil(){
+  const perfilEmail=document.getElementById('perfil-email').value.trim().toLowerCase();
+  if(perfilEmail&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(perfilEmail)){toast('Revisa el correo de contacto');return;}
+  perfil.usuario = document.getElementById('perfil-usuario').value.trim();
+  perfil.email = perfilEmail;
+  perfil.identificado = !!(perfil.usuario||perfil.email||perfil.identificado);
   perfil.nombre = document.getElementById('perfil-nombre').value.trim();
   perfil.tipo   = document.querySelector('#perfil-tipo-chips .chip.on')?.textContent?.replace(/^\S+\s/,'')||perfil.tipo;
   perfil.canal  = document.querySelector('#perfil-canal-chips .chip.on')?.textContent?.replace(/^\S+\s/,'')||perfil.canal;
   LS.set('perfil',perfil);
-  scheduleSync('perfil_actualizado',{tipo:perfil.tipo,canal:perfil.canal});
+  scheduleSync('perfil_actualizado',{tipo:perfil.tipo,canal:perfil.canal,tiene_email:!!perfil.email});
   cerrarPerfil();
   initInicio();
   toast('Perfil guardado ✓');
@@ -1479,13 +1645,7 @@ if('serviceWorker' in navigator){
 }
 
 // ── INIT ─────────────────────────────────────────────────
-// Si ya pasó el onboarding, ir directo al inicio
-if(LS.get('perfil',null)!==null && productos.length>0){
-  go('s-inicio');
-} else if(LS.get('perfil',null)!==null){
-  go('s-inicio');
-}
-// Si no hay perfil guardado, se queda en onboarding (pantalla por defecto)
+routeInitial(true);
 initInicio();
 initSupabase();
 </script>

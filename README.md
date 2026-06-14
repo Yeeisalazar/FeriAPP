@@ -120,10 +120,16 @@ python3 -m http.server 3000
 
 ## Guia para usuarias piloto
 
-Las instrucciones para instalar FeriAPP en Android/iPhone y la pauta de prueba piloto estan en:
+Las instrucciones para instalar FeriAPP en Android/iPhone estan en:
 
 ```text
 docs/guia-instalacion-y-piloto.md
+```
+
+El guion de demo, pauta de feedback y siguientes pasos del piloto estan en:
+
+```text
+docs/guion-demo-y-prueba.md
 ```
 
 ## Modelo de negocio
